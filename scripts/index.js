@@ -1,28 +1,40 @@
 // @todo: Темплейт карточки
-const templateCard = document.querySelector('#card-template').content; //получил доступ ко всему содержимого template
+const templateCard = document.querySelector('#card-template').content; // Получаем доступ ко всему содержимому template
+
 // @todo: DOM узлы
-let cardContainer = document.querySelector('.places__list');//получение доступа к списку(контейнеру), куда надо поместить карточки
+let cardContainer = document.querySelector('.places__list'); // Получаем доступ к списку(контейнеру), куда нужно поместить карточки
 
 // @todo: Функция создания карточки
-initialCards.forEach(function (cardData) {
-    const cardElement = templateCard.querySelector('.places__item').cloneNode(true); //клонируем шаблон карточки
-    //заполняем шаблон переданным объектом
+function createCard(cardData, deleteCardHandler) {
+    const cardElement = templateCard.querySelector('.places__item').cloneNode(true); // Клонируем шаблон карточки
+
+    // Заполняем шаблон переданными данными карточки
     cardElement.querySelector('.card__image').src = cardData.link;
+    cardElement.querySelector('.card__image').alt = cardData.altText;
     cardElement.querySelector('.card__title').textContent = cardData.name;
 
-    //получаем доступ к кнопке удаления на карточке
+    // Получаем доступ к кнопке удаления на карточке
     const deleteButton = cardElement.querySelector('.card__delete-button');
-    //добавляем слушатель события на кнопку удаления
+
+    // Добавляем слушатель события на кнопку удаления
     deleteButton.addEventListener('click', function () {
-        deleteCard(cardElement);
+        deleteCardHandler(cardElement);
     });
 
-    cardContainer.append(cardElement);
-
-});
+    return cardElement; 
+}
 
 // @todo: Функция удаления карточки
-
 function deleteCard(cardElement) {
-    cardElement.remove(); // Удаляем переданный элемент карточки из DOM
+    cardElement.remove();
 }
+
+// @todo: Использование createCard в цикле для добавления карточек в DOM
+initialCards.forEach(function (cardData) {
+    const altText = " ";
+    const card = createCard(cardData, deleteCard, altText);
+
+    // Добавляем карточку в DOM
+    cardContainer.append(card);
+});
+
