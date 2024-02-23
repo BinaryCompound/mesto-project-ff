@@ -5,7 +5,7 @@ const templateCard = document.querySelector('#card-template').content; // Пол
 let cardContainer = document.querySelector('.places__list'); // Получаем доступ к списку(контейнеру), куда нужно поместить карточки
 
 // @todo: Функция создания карточки
-function createCard(cardData, deleteCardHandler) {
+function createCard(cardData) {
     const cardElement = templateCard.querySelector('.places__item').cloneNode(true); // Клонируем шаблон карточки
 
     // Заполняем шаблон переданными данными карточки
@@ -35,4 +35,3 @@ initialCards.forEach(function (cardData) {
     // Добавляем карточку в DOM
     cardContainer.append(card);
 });
-
