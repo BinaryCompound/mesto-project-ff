@@ -17,11 +17,9 @@ function createCard(cardData, deleteCardHandler) {
     const deleteButton = cardElement.querySelector('.card__delete-button');
 
     // Добавляем слушатель события на кнопку удаления
-    deleteButton.addEventListener('click', function () {
-        deleteCardHandler(cardElement);
-    });
+    deleteButton.addEventListener('click', () => cardElement.remove());
 
-    return cardElement; 
+    return cardElement;
 }
 
 // @todo: Функция удаления карточки
@@ -31,7 +29,7 @@ function deleteCard(cardElement) {
 
 // @todo: Использование createCard в цикле для добавления карточек в DOM
 initialCards.forEach(function (cardData) {
-    const altText = " ";
+    const altText = "";
     const card = createCard(cardData, deleteCard, altText);
 
     // Добавляем карточку в DOM
