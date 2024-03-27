@@ -24,8 +24,6 @@ export function createCard(cardData, closePopupHandler, likeHandler, imageClickH
     const cardContainer = document.querySelector('.places__list');
     cardContainer.prepend(cardElement);
 
-    closePopupHandler();
-
     return cardElement;
 }
 

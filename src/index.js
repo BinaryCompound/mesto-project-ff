@@ -22,29 +22,41 @@ const initialCards = [
 ];
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Предзапрос элементов DOM
+    const nameInput = document.querySelector('.popup__input_type_name');
+    const descriptionInput = document.querySelector('.popup__input_type_description');
+    const profileName = document.querySelector('.profile__title');
+    const profileDescription = document.querySelector('.profile__description');
+
+    // Установка статических элементов профиля
+    const profileTitleStatic = profileName.textContent;
+    const profileDescriptionStatic = profileDescription.textContent;
+
+    // Константы для модального окна с изображением
+    const popupImage = document.querySelector('.popup_type_image');
+    const popupImageElement = popupImage.querySelector('.popup__image');
+    const popupCaption = popupImage.querySelector('.popup__caption');
+
+    const cardContainer = document.querySelector('.places__list');
+
     // Создание карточек при загрузке страницы
-    function createInitialCards() {
+    function createInitialCards(container) {
         initialCards.forEach(cardData => {
-            createCard(cardData, closePopup, handleLike, handleImageClick);
+            createCard(cardData, clearForm, handleLike, handleImageClick, container);
         });
     }
-    createInitialCards(); // Вызов функции при загрузке страницы
-
-    // Настройка модальных окон
-    setupModalWindows();
+    createInitialCards(cardContainer); // Передаем cardContainer в функцию createInitialCards
 
     // Открытие и закрытие всплывающего окна редактирования профиля
     const popUpEditProfile = document.querySelector('.popup_type_edit');
-    const openButtonEditProfile = document.querySelector('.profile__edit-button');
+    const buttonOpenPopupProfile = document.querySelector('.profile__edit-button');
     const closeButtonEditProfile = popUpEditProfile.querySelector('.popup__close');
 
-    openButtonEditProfile.addEventListener('click', () => {
+    buttonOpenPopupProfile.addEventListener('click', () => {
         openModal(popUpEditProfile);
         // Заполнение формы данными профиля
-        const nameInput = document.querySelector('.popup__input_type_name');
-        const descriptionInput = document.querySelector('.popup__input_type_description');
-        nameInput.value = document.querySelector('.profile__title').textContent;
-        descriptionInput.value = document.querySelector('.profile__description').textContent;
+        nameInput.value = profileTitleStatic;
+        descriptionInput.value = profileDescriptionStatic;
     });
 
     closeButtonEditProfile.addEventListener('click', () => closeModal(popUpEditProfile));
@@ -57,13 +69,8 @@ document.addEventListener('DOMContentLoaded', function () {
     openButtonAddCard.addEventListener('click', () => openModal(popUpAddCard));
     closeButtonAddCard.addEventListener('click', () => closeModal(popUpAddCard));
 
-    // Добавляем обработчик события для клавиатурного события keydown
-    document.addEventListener('keydown', closeOnEsc);
-
     // Находим форму в DOM для редактирования профиля
     const editProfileForm = document.forms['edit-profile'];
-    const nameInput = document.querySelector('.popup__input_type_name');
-    const descriptionInput = document.querySelector('.popup__input_type_description');
 
     // Обработчик отправки формы редактирования профиля
     function handleEditProfileFormSubmit(evt) {
@@ -74,14 +81,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const newDescription = descriptionInput.value;
 
         // Обновляем данные профиля
-
-        const profileName = document.querySelector('.profile__title');
-        const profileDescription = document.querySelector('.profile__description');
-
         profileName.textContent = newName;
         profileDescription.textContent = newDescription;
         closeModal(popUpEditProfile);
-
     }
 
     // Прикрепляем обработчик к форме редактирования профиля
@@ -95,6 +97,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Обработчик отправки формы добавления новой карточки
     function handleAddCardFormSubmit(evt) {
         evt.preventDefault();
+        
 
         // Получаем значения из полей ввода
         const cardNameValue = cardNameInput.value;
@@ -107,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function () {
         };
 
         // Создаем новую карточку
-        createCard(newCardData, closePopup);
+        createCard(newCardData, clearForm, handleLike, handleImageClick);
 
         // Очищаем поля формы добавления новой карточки
         addCardForm.reset();
@@ -145,14 +148,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Функция для открытия попапа с изображением
     function openImagePopup(imageSrc, imageName) {
-        const popupImage = document.querySelector('.popup_type_image');
-        const popupImageElement = popupImage.querySelector('.popup__image');
-        const popupCaption = popupImage.querySelector('.popup__caption');
-
         popupImageElement.src = imageSrc;
         popupImageElement.alt = imageName;
         popupCaption.textContent = imageName;
-
         openModal(popupImage);
     }
 
@@ -161,24 +159,20 @@ document.addEventListener('DOMContentLoaded', function () {
         openImagePopup(imageSrc, imageName);
     }
 
-    // Функция для закрытия всплывающего окна и очистки формы
-    function closePopup() {
+    // Функция для очистки формы
+    function clearForm() {
         const popup = document.querySelector('.popup');
         const form = popup.querySelector('.popup__form');
         form.reset();
     }
 
-    // Функция для закрытия всплывающего окна при нажатии на Esc
-    function closeOnEsc(event) {
-        if (event.key === 'Escape') {
-            const openedModal = document.querySelector('.popup_is-opened');
-            if (openedModal) {
-                closeModal(openedModal);
-            }
-        }
-    }
-
     // Вызов функции для настройки модальных окон
     setupModalWindows();
 
-});
+    // Настройка модальных окон для изображений
+    const imageModals = document.querySelectorAll('.popup_type_image');
+    imageModals.forEach(modal => {
+        const closeButton = modal.querySelector('.popup__close');
+        closeButton.addEventListener('click', () => closeModal(modal));
+    });
+});    
