@@ -39,18 +39,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const cardContainer = document.querySelector('.places__list');
 
-    // Создание карточек при загрузке страницы
-    function createInitialCards(container) {
-        initialCards.forEach(cardData => {
-            createCard(cardData, clearForm, handleLike, handleImageClick, container);
-        });
+    function addCardToContainer(cardElement) {
+        cardContainer.prepend(cardElement);
     }
-    createInitialCards(cardContainer); // Передаем cardContainer в функцию createInitialCards
+    
+    function createAndAddCardToContainer(cardData) {
+        const cardElement = createCard(cardData, handleLike, handleImageClick);
+        addCardToContainer(cardElement);
+    }
+    
+    initialCards.forEach(createAndAddCardToContainer);
 
     // Открытие и закрытие всплывающего окна редактирования профиля
     const popUpEditProfile = document.querySelector('.popup_type_edit');
     const buttonOpenPopupProfile = document.querySelector('.profile__edit-button');
-    const closeButtonEditProfile = popUpEditProfile.querySelector('.popup__close');
+    const buttonClosePopupProfile = popUpEditProfile.querySelector('.popup__close');
 
     buttonOpenPopupProfile.addEventListener('click', () => {
         openModal(popUpEditProfile);
@@ -59,15 +62,15 @@ document.addEventListener('DOMContentLoaded', function () {
         descriptionInput.value = profileDescriptionStatic;
     });
 
-    closeButtonEditProfile.addEventListener('click', () => closeModal(popUpEditProfile));
+    buttonClosePopupProfile.addEventListener('click', () => closeModal(popUpEditProfile));
 
     // Открытие и закрытие всплывающего окна добавления новой карточки
     const popUpAddCard = document.querySelector('.popup_type_new-card');
-    const openButtonAddCard = document.querySelector('.profile__add-button');
-    const closeButtonAddCard = popUpAddCard.querySelector('.popup__close');
+    const buttonOpenAddCard = document.querySelector('.profile__add-button');
+    const buttonCloseAddCard = popUpAddCard.querySelector('.popup__close');
 
-    openButtonAddCard.addEventListener('click', () => openModal(popUpAddCard));
-    closeButtonAddCard.addEventListener('click', () => closeModal(popUpAddCard));
+    buttonOpenAddCard.addEventListener('click', () => openModal(popUpAddCard));
+    buttonCloseAddCard.addEventListener('click', () => closeModal(popUpAddCard));
 
     // Находим форму в DOM для редактирования профиля
     const editProfileForm = document.forms['edit-profile'];
@@ -97,30 +100,48 @@ document.addEventListener('DOMContentLoaded', function () {
     // Обработчик отправки формы добавления новой карточки
     function handleAddCardFormSubmit(evt) {
         evt.preventDefault();
-        
-
+    
         // Получаем значения из полей ввода
         const cardNameValue = cardNameInput.value;
         const cardLinkValue = cardLinkInput.value;
-
+    
         // Создаем объект с данными новой карточки
         const newCardData = {
             name: cardNameValue,
             link: new URL(cardLinkValue),
         };
-
-        // Создаем новую карточку
-        createCard(newCardData, clearForm, handleLike, handleImageClick);
-
+    
+        // Создаем новую карточку и добавляем её в контейнер
+        const cardElement = createCard(newCardData, handleLike, handleImageClick);
+        addCardToContainer(cardElement);
+    
         // Очищаем поля формы добавления новой карточки
-        addCardForm.reset();
-
+        clearForm(addCardForm);
+    
         // Закрываем всплывающее окно добавления новой карточки
         closeModal(popUpAddCard);
     }
 
     // Прикрепляем обработчик к форме добавления новой карточки
     addCardForm.addEventListener('submit', handleAddCardFormSubmit);
+
+    // Функция для очистки формы
+    function clearForm(form) {
+        form.reset();
+    }
+
+    // Функция для открытия попапа с изображением
+    function openImagePopup(imageSrc, imageName) {
+        popupImageElement.src = imageSrc;
+        popupImageElement.alt = imageName;
+        popupCaption.textContent = imageName;
+        openModal(popupImage);
+    }
+
+    // Обработчик клика по изображению
+    function handleImageClick(imageSrc, imageName) {
+        openImagePopup(imageSrc, imageName);
+    }
 
     // Функция для настройки модальных окон
     function setupModalWindows() {
@@ -146,33 +167,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Функция для открытия попапа с изображением
-    function openImagePopup(imageSrc, imageName) {
-        popupImageElement.src = imageSrc;
-        popupImageElement.alt = imageName;
-        popupCaption.textContent = imageName;
-        openModal(popupImage);
-    }
-
-    // Обработчик клика по изображению
-    function handleImageClick(imageSrc, imageName) {
-        openImagePopup(imageSrc, imageName);
-    }
-
-    // Функция для очистки формы
-    function clearForm() {
-        const popup = document.querySelector('.popup');
-        const form = popup.querySelector('.popup__form');
-        form.reset();
-    }
-
     // Вызов функции для настройки модальных окон
     setupModalWindows();
-
-    // Настройка модальных окон для изображений
-    const imageModals = document.querySelectorAll('.popup_type_image');
-    imageModals.forEach(modal => {
-        const closeButton = modal.querySelector('.popup__close');
-        closeButton.addEventListener('click', () => closeModal(modal));
-    });
-});    
+});
+  

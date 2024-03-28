@@ -1,4 +1,4 @@
-export function createCard(cardData, closePopupHandler, likeHandler, imageClickHandler) {
+export function createCard(cardData, likeHandler, imageClickHandler) {
     const cardTemplate = document.querySelector('#card-template').content;
     const cardElement = cardTemplate.querySelector('.places__item').cloneNode(true);
 
@@ -20,9 +20,6 @@ export function createCard(cardData, closePopupHandler, likeHandler, imageClickH
     likeButton.addEventListener('click', function () {
         likeHandler(likeButton);
     });
-
-    const cardContainer = document.querySelector('.places__list');
-    cardContainer.prepend(cardElement);
 
     return cardElement;
 }
