@@ -170,4 +170,3 @@ document.addEventListener('DOMContentLoaded', function () {
     // Вызов функции для настройки модальных окон
     setupModalWindows();
 });
-  
