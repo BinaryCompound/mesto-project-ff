@@ -861,6 +861,23 @@ template {
   margin-bottom: 10px;
 }
 
+.form__input_type_error{
+  opacity: 0;
+  color: red;
+}
+
+.form__input-error_active {
+  opacity: 1;
+}
+
+.popup__input:invalid {
+  border: 1px solid red; /* красная рамка для некорректных данных */
+} 
+
+.popup__input:valid {
+  border: 1px solid black; /* зелёная - для корректных */
+} 
+
 .popup__input:last-of-type {
   margin-bottom: 0;
 }
