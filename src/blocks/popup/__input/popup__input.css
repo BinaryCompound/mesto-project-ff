@@ -10,6 +10,22 @@
   margin-bottom: 10px;
 }
 
+.popup__input:invalid {
+  border: 1px solid red;
+} 
+
+.popup__input:invalid:focus {
+  outline: 1px solid red;
+} 
+
+.popup__input:valid {
+  border: 1px solid black;
+} 
+
+.form__input_type_error{
+  color: red;
+}
+
 .popup__input:last-of-type {
   margin-bottom: 0;
 }

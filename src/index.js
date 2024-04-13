@@ -1,59 +1,101 @@
+
 import './styles/index.css';
 import avatarImage from './images/avatar.jpg';
-import { createCard, handleLike, deleteCard } from './components/card.js';
+import { makeCard, handleLike, removeCard } from './components/card.js';
 import { openModal, closeModal } from './components/modal.js';
-
-document.querySelector('.profile__image').style.backgroundImage = `url(${avatarImage})`;
-
-const arkhyz = new URL('https://pictures.s3.yandex.net/frontend-developer/cards-compressed/arkhyz.jpg');
-const chelyabinskRegion = new URL('https://pictures.s3.yandex.net/frontend-developer/cards-compressed/chelyabinsk-oblast.jpg');
-const ivanovo = new URL('https://pictures.s3.yandex.net/frontend-developer/cards-compressed/ivanovo.jpg');
-const kamchatka = new URL('https://pictures.s3.yandex.net/frontend-developer/cards-compressed/kamchatka.jpg');
-const kholmogoryDistrict = new URL('https://pictures.s3.yandex.net/frontend-developer/cards-compressed/kholmogorsky-rayon.jpg');
-const baikal = new URL('https://pictures.s3.yandex.net/frontend-developer/cards-compressed/baikal.jpg');
-
-const initialCards = [
-    { name: 'Архыз', link: arkhyz },
-    { name: 'Челябинская область', link: chelyabinskRegion },
-    { name: 'Иваново', link: ivanovo },
-    { name: 'Камчатка', link: kamchatka },
-    { name: 'Холмогорский район', link: kholmogoryDistrict },
-    { name: 'Байкал', link: baikal },
-];
+import { enableValidation } from './components/validation.js';
+import { getMyProfile, editMyProfile, loadInitialCards, addNewCard, updateAvatar, deleteCard, likeCard, dislikeCard } from './components/api.js'; // Импортируем функции из api.js
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Предзапрос элементов DOM
-    const nameInput = document.querySelector('.popup__input_type_name');
-    const descriptionInput = document.querySelector('.popup__input_type_description');
+    const cardContainer = document.querySelector('.places__list');
+    document.querySelector('.profile__image').style.backgroundImage = `url(${avatarImage})`;
+
+    const arkhyz = new URL('https://pictures.s3.yandex.net/frontend-developer/cards-compressed/arkhyz.jpg');
+    const chelyabinskRegion = new URL('https://pictures.s3.yandex.net/frontend-developer/cards-compressed/chelyabinsk-oblast.jpg');
+    const ivanovo = new URL('https://pictures.s3.yandex.net/frontend-developer/cards-compressed/ivanovo.jpg');
+    const kamchatka = new URL('https://pictures.s3.yandex.net/frontend-developer/cards-compressed/kamchatka.jpg');
+    const kholmogoryDistrict = new URL('https://pictures.s3.yandex.net/frontend-developer/cards-compressed/kholmogorsky-rayon.jpg');
+    const baikal = new URL('https://pictures.s3.yandex.net/frontend-developer/cards-compressed/baikal.jpg');
+
+    const initialCards = [
+        { name: 'Архыз', link: arkhyz },
+        { name: 'Челябинская область', link: chelyabinskRegion },
+        { name: 'Иваново', link: ivanovo },
+        { name: 'Камчатка', link: kamchatka },
+        { name: 'Холмогорский район', link: kholmogoryDistrict },
+        { name: 'Байкал', link: baikal },
+    ];
+
+    const renderCard = (cardData) => {
+        const cardElement = makeCard(cardData, handleLike, handleImageClick);
+        const likeCount = cardData.likes ? cardData.likes.length : 0; // Проверяем, существует ли свойство likes
+        const likeCountElement = cardElement.querySelector('.card__like-count');
+        likeCountElement.textContent = likeCount; // Обновляем текстовое содержимое элемента с количеством лайков
+        cardContainer.appendChild(cardElement);
+    };
+
+
+    initialCards.forEach(renderCard);
     const profileName = document.querySelector('.profile__title');
     const profileDescription = document.querySelector('.profile__description');
-
-    // Установка статических элементов профиля
     const profileTitleStatic = profileName.textContent;
     const profileDescriptionStatic = profileDescription.textContent;
-
-    // Константы для модального окна с изображением
     const popupImage = document.querySelector('.popup_type_image');
     const popupImageElement = popupImage.querySelector('.popup__image');
     const popupCaption = popupImage.querySelector('.popup__caption');
-
-    const cardContainer = document.querySelector('.places__list');
-
-    function addCardToContainer(cardElement) {
-        cardContainer.prepend(cardElement);
-    }
-    
-    function createAndAddCardToContainer(cardData) {
-        const cardElement = createCard(cardData, handleLike, handleImageClick);
-        addCardToContainer(cardElement);
-    }
-    
-    initialCards.forEach(createAndAddCardToContainer);
-
-    // Открытие и закрытие всплывающего окна редактирования профиля
     const popUpEditProfile = document.querySelector('.popup_type_edit');
     const buttonOpenPopupProfile = document.querySelector('.profile__edit-button');
     const buttonClosePopupProfile = popUpEditProfile.querySelector('.popup__close');
+    const popUpAddCard = document.querySelector('.popup_type_new-card');
+    const buttonOpenAddCard = document.querySelector('.profile__add-button');
+    const buttonCloseAddCard = popUpAddCard.querySelector('.popup__close');
+    const addCardForm = document.forms['new-place'];
+    const cardNameInput = document.querySelector('.popup__input_type_card-name');
+    const cardLinkInput = document.querySelector('.popup__input_type_url');
+    const formElement = document.querySelector('.popup__form');
+    const nameInput = formElement.querySelector('#name');
+    const descriptionInput = formElement.querySelector('#description');
+
+    const settings = {
+        formSelector: '.popup__form',
+        inputSelector: '.popup__input',
+        submitButtonSelector: '.popup__button',
+        inactiveButtonClass: 'popup__button_disabled',
+        inputErrorClass: 'popup__input_type_error',
+        errorClass: 'popup__error_visible'
+    };
+
+    const clearValidation = (formElement, settings) => {
+        const inputs = formElement.querySelectorAll(settings.inputSelector);
+        const errorMessages = formElement.querySelectorAll(settings.errorSelector);
+        const submitButton = formElement.querySelector(settings.submitButtonSelector);
+
+        inputs.forEach(input => {
+            const errorElement = input.nextElementSibling; // Предполагается, что сообщение об ошибке следует за полем ввода
+            errorElement.textContent = '';
+            errorElement.classList.remove(settings.errorActiveClass);
+        });
+
+        errorMessages.forEach(errorMessage => {
+            errorMessage.textContent = '';
+        });
+
+        submitButton.setAttribute('disabled', '');
+    };
+
+    enableValidation(settings);
+    clearValidation(formElement, settings);
+
+    function addCardToContainer(cardElement) {
+        cardContainer.prepend(cardElement);
+    };
+
+    function createAndAddCardToContainer(cardData) {
+        const cardElement = makeCard(cardData, handleLike, handleImageClick);
+        addCardToContainer(cardElement);
+    };
+
+    initialCards.forEach(createAndAddCardToContainer);
 
     buttonOpenPopupProfile.addEventListener('click', () => {
         openModal(popUpEditProfile);
@@ -63,12 +105,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     buttonClosePopupProfile.addEventListener('click', () => closeModal(popUpEditProfile));
-
-    // Открытие и закрытие всплывающего окна добавления новой карточки
-    const popUpAddCard = document.querySelector('.popup_type_new-card');
-    const buttonOpenAddCard = document.querySelector('.profile__add-button');
-    const buttonCloseAddCard = popUpAddCard.querySelector('.popup__close');
-
     buttonOpenAddCard.addEventListener('click', () => openModal(popUpAddCard));
     buttonCloseAddCard.addEventListener('click', () => closeModal(popUpAddCard));
 
@@ -87,40 +123,38 @@ document.addEventListener('DOMContentLoaded', function () {
         profileName.textContent = newName;
         profileDescription.textContent = newDescription;
         closeModal(popUpEditProfile);
-    }
+    };
 
     // Прикрепляем обработчик к форме редактирования профиля
     editProfileForm.addEventListener('submit', handleEditProfileFormSubmit);
 
-    // Находим форму в DOM для добавления новой карточки
-    const addCardForm = document.forms['new-place'];
-    const cardNameInput = document.querySelector('.popup__input_type_card-name');
-    const cardLinkInput = document.querySelector('.popup__input_type_url');
-
     // Обработчик отправки формы добавления новой карточки
     function handleAddCardFormSubmit(evt) {
         evt.preventDefault();
-    
+
         // Получаем значения из полей ввода
         const cardNameValue = cardNameInput.value;
         const cardLinkValue = cardLinkInput.value;
-    
-        // Создаем объект с данными новой карточки
-        const newCardData = {
+
+        // Вызываем функцию добавления новой карточки с полученными значениями
+        addNewCard({
             name: cardNameValue,
-            link: new URL(cardLinkValue),
-        };
-    
-        // Создаем новую карточку и добавляем её в контейнер
-        const cardElement = createCard(newCardData, handleLike, handleImageClick);
-        addCardToContainer(cardElement);
-    
-        // Очищаем поля формы добавления новой карточки
-        clearForm(addCardForm);
-    
-        // Закрываем всплывающее окно добавления новой карточки
-        closeModal(popUpAddCard);
-    }
+            link: cardLinkValue
+        })
+            .then(newCard => {
+                // Создаем новую карточку и добавляем её в контейнер
+                createAndAddCardToContainer(newCard);
+
+                // Очищаем поля формы добавления новой карточки
+                clearForm(addCardForm);
+
+                // Закрываем всплывающее окно добавления новой карточки
+                closeModal(popUpAddCard);
+            })
+            .catch(err => {
+                console.error('Ошибка при добавлении карточки:', err);
+            });
+    };
 
     // Прикрепляем обработчик к форме добавления новой карточки
     addCardForm.addEventListener('submit', handleAddCardFormSubmit);
@@ -128,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Функция для очистки формы
     function clearForm(form) {
         form.reset();
-    }
+    };
 
     // Функция для открытия попапа с изображением
     function openImagePopup(imageSrc, imageName) {
@@ -136,12 +170,12 @@ document.addEventListener('DOMContentLoaded', function () {
         popupImageElement.alt = imageName;
         popupCaption.textContent = imageName;
         openModal(popupImage);
-    }
+    };
 
     // Обработчик клика по изображению
     function handleImageClick(imageSrc, imageName) {
         openImagePopup(imageSrc, imageName);
-    }
+    };
 
     // Функция для настройки модальных окон
     function setupModalWindows() {
@@ -165,8 +199,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         });
-    }
+    };
 
-    // Вызов функции для настройки модальных окон
+    loadInitialCards()
+        .then(cards => {
+            console.log('Загруженные карточки:', cards);
+            cards.forEach(renderCard);
+        })
+        .catch(err => {
+            console.error('Ошибка при загрузке карточек:', err);
+        });
+
+    editMyProfile({
+        name: 'Илья Позволенко',
+        about: 'Человек'
+    })
+        .then(data => {
+            console.log('Профиль успешно отредактирован:', data);
+        })
+        .catch(err => {
+            console.error('Ошибка при редактировании профиля:', err);
+        });
+
     setupModalWindows();
 });
