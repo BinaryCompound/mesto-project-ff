@@ -1,5 +1,4 @@
-
-export function makeCard(cardData, likeHandler, imageClickHandler) {
+export function createCard(cardData, likeHandler, imageClickHandler) {
     const cardTemplate = document.querySelector('#card-template').content;
     const cardElement = cardTemplate.querySelector('.places__item').cloneNode(true);
 
@@ -14,7 +13,7 @@ export function makeCard(cardData, likeHandler, imageClickHandler) {
 
     const deleteButton = cardElement.querySelector('.card__delete-button');
     deleteButton.addEventListener('click', function () {
-        removeCard(cardElement);
+        deleteCard(cardElement);
     });
 
     const likeButton = cardElement.querySelector('.card__like-button');
@@ -25,13 +24,12 @@ export function makeCard(cardData, likeHandler, imageClickHandler) {
     return cardElement;
 }
 
-
 // Функция для обработки события лайка
 export function handleLike(likeButton) {
     likeButton.classList.toggle('card__like-button_is-active');
 }
 
 // Функция для обработки события удаления карточки
-export function removeCard(cardElement) {
+export function deleteCard(cardElement) {
     cardElement.remove();
 }

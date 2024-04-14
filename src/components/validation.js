@@ -1,3 +1,23 @@
+// Объявляем функцию handleFormInput внешними по отношению к validateForm и enableValidation
+function handleFormInput(form, settings) {
+    const inputs = form.querySelectorAll(settings.inputSelector);
+    let isFormValid = true;
+
+    inputs.forEach(input => {
+        if (!input.validity.valid) {
+            isFormValid = false;
+            return;
+        }
+    });
+
+    const submitButton = form.querySelector(settings.submitButtonSelector);
+    if (isFormValid) {
+        submitButton.removeAttribute('disabled');
+    } else {
+        submitButton.setAttribute('disabled', 'disabled');
+    }
+}
+
 export function enableValidation(settings) {
     if (!settings || typeof settings !== 'object') {
         console.error('Invalid settings object');
@@ -14,6 +34,7 @@ export function enableValidation(settings) {
 
         form.addEventListener('input', function (evt) {
             validateInput(evt.target, settings);
+            handleFormInput(form, settings);
         });
     });
 }
@@ -27,6 +48,14 @@ export function validateInput(input, settings) {
         errorElement.textContent = '';
         errorElement.classList.remove(settings.inputErrorClass);
     }
+}
+
+export function clearValidationErrors(popupElement) {
+    const errorElements = popupElement.querySelectorAll('.popup__input-error');
+    errorElements.forEach(errorElement => {
+        errorElement.textContent = '';
+        errorElement.classList.remove('popup__input-error_active');
+    });
 }
 
 export function validateForm(form, settings) {
@@ -47,4 +76,3 @@ export function validateForm(form, settings) {
         submitButton.setAttribute('disabled', 'disabled');
     }
 }
-
