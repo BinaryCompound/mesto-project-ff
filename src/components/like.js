@@ -1,4 +1,5 @@
 import { likeCard } from './api.js';
+import { initialCards } from '../index.js';
 
 // Функция для обновления счетчика лайков на карточке
 export function updateLikesCounter(cardElement, likesCount) {
