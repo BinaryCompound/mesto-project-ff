@@ -34,8 +34,3 @@ export function handleLikeButtonClick(event) {
             });
     }
 }
-
-// Добавляем обработчик события на кнопки лайка для каждой карточки
-document.querySelectorAll('.card__like-button').forEach((button) => {
-    button.addEventListener('click', handleLikeButtonClick);
-});

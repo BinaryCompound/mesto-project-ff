@@ -38,7 +38,7 @@ const buttonClosePopupProfile = popUpEditProfile.querySelector('.popup__close');
 const popUpAddCard = document.querySelector('.popup_type_new-card');
 const buttonOpenAddCard = document.querySelector('.profile__add-button');
 const buttonCloseAddCard = popUpAddCard.querySelector('.popup__close');
-const editProfileForm = document.forms['edit_profile'];
+const formEditProfile = document.forms['edit_profile'];
 const addCardForm = document.forms['new_place'];
 const cardNameInput = document.querySelector('.popup__input_type_card-name');
 const cardLinkInput = document.querySelector('.popup__input_type_url');
@@ -53,9 +53,11 @@ function addCardToContainer(cardElement) {
 function createAndAddCardToContainer(cardData) {
     const cardElement = createCard(cardData, handleLike, handleImageClick);
     addCardToContainer(cardElement);
+    // Добавляем обработчик события на кнопку лайка для каждой созданной карточки
+    cardElement.querySelector('.card__like-button').addEventListener('click', handleLikeButtonClick);
 }
 
-function handleEditProfileFormSubmit(evt) {
+function handleformEditProfileSubmit(evt) {
     evt.preventDefault();
     const newName = nameInput.value;
     const newDescription = descriptionInput.value;
@@ -145,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
     buttonClosePopupProfile.addEventListener('click', () => closeModal(popUpEditProfile));
     buttonOpenAddCard.addEventListener('click', () => openModal(popUpAddCard));
     buttonCloseAddCard.addEventListener('click', () => closeModal(popUpAddCard));
-    editProfileForm.addEventListener('submit', handleEditProfileFormSubmit);
+    formEditProfile.addEventListener('submit', handleformEditProfileSubmit);
     addCardForm.addEventListener('submit', handleAddCardFormSubmit);
 
     setupModalWindows();
@@ -157,13 +159,13 @@ document.querySelectorAll('.card__like-button').forEach((button) => {
     button.addEventListener('click', handleLikeButtonClick);
 });
 
-editProfileForm.addEventListener('submit', function (evt) {
+formEditProfile.addEventListener('submit', function (evt) {
     evt.preventDefault();
     const newName = nameInput.value;
     const newDescription = descriptionInput.value;
     profileName.textContent = newName;
     profileDescription.textContent = newDescription;
-    const saveButton = editProfileForm.querySelector('.popup__button');
+    const saveButton = formEditProfile.querySelector('.popup__button');
     saveButton.textContent = 'Сохранение...'; // Изменение текста кнопки
     editMyProfile({ name: newName, about: newDescription })
         .then(() => {
@@ -205,10 +207,6 @@ export function closeAvatarModal() {
 }
 
 // Обработчики событий
-
-document.querySelectorAll('.card__like-button').forEach((button) => {
-    button.addEventListener('click', handleLikeButtonClick);
-});
 
 document.addEventListener('DOMContentLoaded', function () {
     const avatarForm = document.forms['edit_avatar'];
