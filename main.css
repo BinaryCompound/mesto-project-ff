@@ -655,6 +655,55 @@ template {
   padding: 36px 0;
 }
 
+.profile__image-button {
+  background: none;
+  border: none;
+  margin-right: 25px;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile__image-button:hover img {
+  opacity: 0.7;
+}
+
+.profile__image-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.profile__image-button:hover::before {
+  opacity: 1;
+}
+
+.profile__image-button svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  fill: #FFF; 
+  opacity: 0; 
+  transition: opacity 0.3s ease; 
+}
+
+.profile__image-button:hover svg {
+  opacity: 1;
+}
+
+.profile__image {
+  margin: 0;
+}
+
+
 @media screen and (max-width: 480px) {
   .profile {
     padding: 43px 0;
@@ -861,22 +910,17 @@ template {
   margin-bottom: 10px;
 }
 
-.form__input_type_error{
-  opacity: 0;
+.popup__input_type_error { 
+  border-bottom: 1px solid red;
+}
+
+.popup__input-error_active {
+  margin: 5px 0 0 0; /* Замените запятые на пробелы здесь */
   color: red;
+  text-align: left;
+  font-family: Inter;
+  font-size: 18px;
 }
-
-.form__input-error_active {
-  opacity: 1;
-}
-
-.popup__input:invalid {
-  border: 1px solid red; /* красная рамка для некорректных данных */
-} 
-
-.popup__input:valid {
-  border: 1px solid black; /* зелёная - для корректных */
-} 
 
 .popup__input:last-of-type {
   margin-bottom: 0;
@@ -903,6 +947,11 @@ template {
   border: none;
   transition: visibility 0s, background 0.3s;
   margin-top: 48px;
+}
+
+.popup__button:disabled {
+  opacity: 0.5; 
+  pointer-events: none;
 }
 
 .popup__button:hover {
