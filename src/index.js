@@ -3,7 +3,9 @@ import { createCard, handleLike, deleteCard } from './components/card.js';
 import { openModal, closeModal } from './components/modal.js';
 import { enableValidation } from './components/validation.js';
 import { editMyProfile } from './components/api.js';
+import { openAvatarModal } from './components/avatar.js';
 import { handleLikeButtonClick } from './components/like.js';
+import { addNewCard } from './components/api.js';
 
 // Глобальные переменные
 const arkhyz = new URL('https://pictures.s3.yandex.net/frontend-developer/cards-compressed/arkhyz.jpg');
@@ -46,6 +48,21 @@ const profileImage = document.querySelector('.profile__image');
 
 
 // Function declarations
+
+function handleAddCardFormSubmit(evt) {
+    evt.preventDefault();
+    const cardNameValue = cardNameInput.value;
+    const cardLinkValue = cardLinkInput.value;
+    addNewCard({ name: cardNameValue, link: cardLinkValue })
+        .then((newCard) => {
+            createAndAddCardToContainer(newCard);
+            clearForm(addCardForm);
+            closeModal(popUpAddCard);
+        })
+        .catch((err) => {
+            console.error('Ошибка при добавлении карточки:', err);
+        });
+}
 function addCardToContainer(cardElement) {
     cardContainer.prepend(cardElement);
 }
@@ -64,20 +81,6 @@ function handleformEditProfileSubmit(evt) {
     profileName.textContent = newName;
     profileDescription.textContent = newDescription;
     closeModal(popUpEditProfile);
-}
-
-function handleAddCardFormSubmit(evt) {
-    evt.preventDefault();
-    const cardNameValue = cardNameInput.value;
-    const cardLinkValue = cardLinkInput.value;
-    const newCardData = {
-        name: cardNameValue,
-        link: new URL(cardLinkValue),
-    };
-    const cardElement = createCard(newCardData, handleLike, handleImageClick);
-    addCardToContainer(cardElement);
-    clearForm(addCardForm);
-    closeModal(popUpAddCard);
 }
 
 function clearForm(form) {
@@ -132,6 +135,11 @@ document.addEventListener('DOMContentLoaded', function () {
         inputErrorClass: 'popup__input-error_active',
     });
 
+    buttonOpenAddCard.addEventListener('click', () => {
+        openModal(popUpAddCard);
+    });
+
+    addCardForm.addEventListener('submit', handleAddCardFormSubmit);
 
     profileImage.addEventListener('click', () => {
         const editAvatarPopup = document.querySelector('.popup_type_new-avatar');
@@ -159,6 +167,16 @@ document.querySelectorAll('.card__like-button').forEach((button) => {
     button.addEventListener('click', handleLikeButtonClick);
 });
 
+profileImage.addEventListener('click', () => {
+    openAvatarModal();
+});
+
+const avatarForm = document.forms['edit_avatar'];
+
+if (avatarForm) {
+    avatarForm.addEventListener('submit', handleAvatarFormSubmit);
+}
+
 formEditProfile.addEventListener('submit', function (evt) {
     evt.preventDefault();
     const newName = nameInput.value;
@@ -166,7 +184,7 @@ formEditProfile.addEventListener('submit', function (evt) {
     profileName.textContent = newName;
     profileDescription.textContent = newDescription;
     const saveButton = formEditProfile.querySelector('.popup__button');
-    saveButton.textContent = 'Сохранение...'; // Изменение текста кнопки
+    saveButton.textContent = 'Сохранение...';
     editMyProfile({ name: newName, about: newDescription })
         .then(() => {
             closeModal(popUpEditProfile);
@@ -175,7 +193,7 @@ formEditProfile.addEventListener('submit', function (evt) {
             console.error('Ошибка при сохранении профиля:', err);
         })
         .finally(() => {
-            saveButton.textContent = 'Сохранить'; // Возврат исходного текста кнопки
+            saveButton.textContent = 'Сохранить';
         });
 });
 
@@ -192,12 +210,6 @@ function handleAvatarFormSubmit(evt) {
     const avatarUrl = document.getElementById('avatar__input').value;
     updateAvatar(avatarUrl);
     closeModal(document.querySelector('.popup_type_new-avatar'));
-}
-
-// Функция для открытия модального окна обновления аватара
-export function openAvatarModal() {
-    const modalWindow = document.querySelector('.popup_type_new-avatar');
-    openModal(modalWindow);
 }
 
 // Функция для закрытия модального окна обновления аватара
