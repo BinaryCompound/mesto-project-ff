@@ -1,5 +1,4 @@
 import { likeCard } from './api.js';
-import { initialCards } from '../index.js';
 
 // Функция для обновления счетчика лайков на карточке
 export function updateLikesCounter(cardElement, likesCount) {
@@ -35,3 +34,8 @@ export function handleLikeButtonClick(event) {
             });
     }
 }
+
+// Добавляем обработчик события на кнопки лайка для каждой карточки
+document.querySelectorAll('.card__like-button').forEach((button) => {
+    button.addEventListener('click', handleLikeButtonClick);
+});

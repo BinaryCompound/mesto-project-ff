@@ -1,4 +1,4 @@
-import { checkResponse } from './utils'; 
+import { checkResponse } from './utils'; // Импортируем функцию checkResponse
 
 const config = {
   baseUrl: 'https://nomoreparties.co/v1/wff-cohort-10',
@@ -34,27 +34,7 @@ export const getCards = () => {
     });
 };
 
-export const updateAvatar = (avatar) => {
-  return fetch(`${config.baseUrl}/users/me/avatar`, {
-    method: 'PATCH',
-    headers: {
-      ...config.headers,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      avatar
-    })
-  })
-    .then(checkResponse)
-    .then(res => {
-      if (res.ok) {
-        return res.json();
-      }
-      return Promise.reject(`Ошибка: ${res.status}`);
-    });
-};
-
-export const editMyProfile = ({ name, about, avatar }) => {
+export const editMyProfile = ({ name, about }) => {
   return fetch(`${config.baseUrl}/users/me`, {
     method: 'PATCH',
     headers: {
@@ -63,11 +43,10 @@ export const editMyProfile = ({ name, about, avatar }) => {
     },
     body: JSON.stringify({
       name,
-      about,
-      avatar
+      about
     })
   })
-    .then(checkResponse) 
+    .then(checkResponse) // Проверяем ответ
     .then(res => {
       if (res.ok) {
         return res.json();
@@ -88,7 +67,7 @@ export const addNewCard = ({ name, link }) => {
       link
     })
   })
-    .then(checkResponse)
+    .then(checkResponse) // Проверяем ответ
     .then(res => {
       if (res.ok) {
         return res.json();

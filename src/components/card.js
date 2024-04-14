@@ -17,11 +17,10 @@ export function createCard(cardData, likeHandler, imageClickHandler) {
     });
 
     const likeButton = cardElement.querySelector('.card__like-button');
-    likeButton.dataset.cardId = cardData.id; // Заполняем data-card-id
     likeButton.addEventListener('click', function () {
         likeHandler(likeButton);
     });
-    
+
     return cardElement;
 }
 
