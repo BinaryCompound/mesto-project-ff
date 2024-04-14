@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 document.querySelectorAll('.card__like-button').forEach((button) => {
     button.addEventListener('click', handleLikeButtonClick);
-  });
+});
 
 editProfileForm.addEventListener('submit', function (evt) {
     evt.preventDefault();
@@ -205,6 +205,11 @@ export function closeAvatarModal() {
 }
 
 // Обработчики событий
+
+document.querySelectorAll('.card__like-button').forEach((button) => {
+    button.addEventListener('click', handleLikeButtonClick);
+});
+
 document.addEventListener('DOMContentLoaded', function () {
     const avatarForm = document.forms['edit_avatar'];
 
