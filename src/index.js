@@ -1,8 +1,9 @@
 import './styles/index.css';
-import avatarImage from './images/avatar.jpg';
 import { createCard, handleLike, deleteCard } from './components/card.js';
 import { openModal, closeModal } from './components/modal.js';
 import { enableValidation } from './components/validation.js';
+import { editMyProfile } from './components/api.js';
+import { handleLikeButtonClick } from './components/like.js';
 
 // Глобальные переменные
 const arkhyz = new URL('https://pictures.s3.yandex.net/frontend-developer/cards-compressed/arkhyz.jpg');
@@ -150,4 +151,73 @@ document.addEventListener('DOMContentLoaded', function () {
     setupModalWindows();
 
     initialCards.forEach(createAndAddCardToContainer);
+});
+
+document.querySelectorAll('.card__like-button').forEach((button) => {
+    button.addEventListener('click', handleLikeButtonClick);
+  });
+
+editProfileForm.addEventListener('submit', function (evt) {
+    evt.preventDefault();
+    const newName = nameInput.value;
+    const newDescription = descriptionInput.value;
+    profileName.textContent = newName;
+    profileDescription.textContent = newDescription;
+    const saveButton = editProfileForm.querySelector('.popup__button');
+    saveButton.textContent = 'Сохранение...'; // Изменение текста кнопки
+    editMyProfile({ name: newName, about: newDescription })
+        .then(() => {
+            closeModal(popUpEditProfile);
+        })
+        .catch((err) => {
+            console.error('Ошибка при сохранении профиля:', err);
+        })
+        .finally(() => {
+            saveButton.textContent = 'Сохранить'; // Возврат исходного текста кнопки
+        });
+});
+
+export function updateAvatar(avatarUrl) {
+    // Здесь должен быть код отправки запроса на сервер
+    // После успешного ответа от сервера обновляем аватар на странице
+    const profileImage = document.querySelector('.profile__image');
+    profileImage.src = avatarUrl;
+}
+
+// Функция для обработки отправки формы обновления аватара
+function handleAvatarFormSubmit(evt) {
+    evt.preventDefault();
+    const avatarUrl = document.getElementById('avatar__input').value;
+    updateAvatar(avatarUrl);
+    closeModal(document.querySelector('.popup_type_new-avatar'));
+}
+
+// Функция для открытия модального окна обновления аватара
+export function openAvatarModal() {
+    const modalWindow = document.querySelector('.popup_type_new-avatar');
+    openModal(modalWindow);
+}
+
+// Функция для закрытия модального окна обновления аватара
+export function closeAvatarModal() {
+    const modalWindow = document.querySelector('.popup_type_new-avatar');
+    closeModal(modalWindow);
+}
+
+// Обработчики событий
+document.addEventListener('DOMContentLoaded', function () {
+    const avatarForm = document.forms['edit_avatar'];
+
+    // Добавляем обработчик отправки формы
+    if (avatarForm) {
+        avatarForm.addEventListener('submit', handleAvatarFormSubmit);
+    }
+
+    // Включаем валидацию для формы обновления аватара
+    enableValidation({
+        formSelector: '.popup_type_new-avatar .popup__form',
+        inputSelector: '.popup_type_new-avatar .popup__input',
+        submitButtonSelector: '.popup_type_new-avatar .popup__button',
+        inputErrorClass: 'popup__input-error_active',
+    });
 });

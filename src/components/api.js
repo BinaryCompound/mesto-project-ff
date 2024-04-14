@@ -1,5 +1,4 @@
-
-import { checkResponse } from './validation.js'; // Импортируем функцию checkResponse
+import { checkResponse } from './utils'; // Импортируем функцию checkResponse
 
 const config = {
   baseUrl: 'https://nomoreparties.co/v1/wff-cohort-10',
@@ -109,27 +108,6 @@ export const dislikeCard = (cardId) => {
   return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
     method: 'DELETE',
     headers: config.headers
-  })
-    .then(checkResponse) // Проверяем ответ
-    .then(res => {
-      if (res.ok) {
-        return res.json();
-      }
-      return Promise.reject(`Ошибка: ${res.status}`);
-    });
-};
-
-
-export const updateAvatar = (avatarUrl) => {
-  return fetch(`${config.baseUrl}/users/me/avatar`, {
-    method: 'PATCH',
-    headers: {
-      ...config.headers,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      avatar: avatarUrl
-    })
   })
     .then(checkResponse) // Проверяем ответ
     .then(res => {

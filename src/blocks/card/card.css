@@ -13,3 +13,9 @@
   position: relative;
   overflow: hidden;
 }
+
+.card__like-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
