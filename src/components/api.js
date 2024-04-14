@@ -1,5 +1,6 @@
 import { checkResponse } from './utils'; // Импортируем функцию checkResponse
 import { openAvatarModal } from './avatar.js';
+import { cardId } from '../index.js';
 
 const config = {
   baseUrl: 'https://nomoreparties.co/v1/wff-cohort-10',
