@@ -1,4 +1,6 @@
 
+import { checkResponse } from './validation.js'; // Импортируем функцию checkResponse
+
 const config = {
   baseUrl: 'https://nomoreparties.co/v1/wff-cohort-10',
   headers: {
@@ -11,6 +13,7 @@ export const getMyProfile = () => {
   return fetch(`${config.baseUrl}/users/me`, {
     headers: config.headers
   })
+    .then(checkResponse) // Проверяем ответ
     .then(res => {
       if (res.ok) {
         return res.json();
@@ -23,6 +26,7 @@ export const getCards = () => {
   return fetch(`${config.baseUrl}/cards`, {
     headers: config.headers
   })
+    .then(checkResponse) // Проверяем ответ
     .then(res => {
       if (res.ok) {
         return res.json();
@@ -43,6 +47,7 @@ export const editMyProfile = ({ name, about }) => {
       about
     })
   })
+    .then(checkResponse) // Проверяем ответ
     .then(res => {
       if (res.ok) {
         return res.json();
@@ -63,6 +68,7 @@ export const addNewCard = ({ name, link }) => {
       link
     })
   })
+    .then(checkResponse) // Проверяем ответ
     .then(res => {
       if (res.ok) {
         return res.json();
@@ -76,6 +82,7 @@ export const deleteCard = (cardId) => {
     method: 'DELETE',
     headers: config.headers
   })
+    .then(checkResponse) // Проверяем ответ
     .then(res => {
       if (res.ok) {
         return res.json();
@@ -89,6 +96,7 @@ export const likeCard = (cardId) => {
     method: 'PUT',
     headers: config.headers
   })
+    .then(checkResponse) // Проверяем ответ
     .then(res => {
       if (res.ok) {
         return res.json();
@@ -102,6 +110,7 @@ export const dislikeCard = (cardId) => {
     method: 'DELETE',
     headers: config.headers
   })
+    .then(checkResponse) // Проверяем ответ
     .then(res => {
       if (res.ok) {
         return res.json();
@@ -122,6 +131,7 @@ export const updateAvatar = (avatarUrl) => {
       avatar: avatarUrl
     })
   })
+    .then(checkResponse) // Проверяем ответ
     .then(res => {
       if (res.ok) {
         return res.json();
