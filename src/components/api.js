@@ -1,6 +1,4 @@
-import { checkResponse } from './utils'; // Импортируем функцию checkResponse
-import { openAvatarModal } from './avatar.js';
-import { cardId } from '../index.js';
+import { checkResponse } from './utils';
 
 const config = {
   baseUrl: 'https://nomoreparties.co/v1/wff-cohort-10',
@@ -10,7 +8,7 @@ const config = {
   }
 };
 
-export const getMyProfile = () => {
+function getMyProfile () {
   return fetch(`${config.baseUrl}/users/me`, {
     headers: config.headers
   })
@@ -23,7 +21,7 @@ export const getMyProfile = () => {
     });
 };
 
-export const getCards = () => {
+function getCards () {
   return fetch(`${config.baseUrl}/cards`, {
     headers: config.headers
   })
@@ -36,7 +34,7 @@ export const getCards = () => {
     });
 };
 
-export const updateAvatar = (avatar) => {
+export function updateAvatar(avatar) {
   return fetch(`${config.baseUrl}/users/me/avatar`, {
     method: 'PATCH',
     headers: {
@@ -48,15 +46,10 @@ export const updateAvatar = (avatar) => {
     })
   })
     .then(checkResponse)
-    .then(res => {
-      if (res.ok) {
-        return res.json();
-      }
-      return Promise.reject(`Ошибка: ${res.status}`);
-    });
 };
 
-export const editMyProfile = ({ name, about, avatar }) => {
+
+function editMyProfile ({ name, about, avatar }) {
   return fetch(`${config.baseUrl}/users/me`, {
     method: 'PATCH',
     headers: {
@@ -78,7 +71,7 @@ export const editMyProfile = ({ name, about, avatar }) => {
     });
 };
 
-export const addNewCard = ({ name, link }) => {
+function addNewCard ({ name, link }) {
   return fetch(`${config.baseUrl}/cards`, {
     method: 'POST',
     headers: {
@@ -99,7 +92,7 @@ export const addNewCard = ({ name, link }) => {
     });
 };
 
-export const deleteCard = (cardId) => {
+function deleteCard (cardId) {
   return fetch(`${config.baseUrl}/cards/${cardId}`, {
     method: 'DELETE',
     headers: config.headers
@@ -113,7 +106,7 @@ export const deleteCard = (cardId) => {
     });
 };
 
-export const likeCard = (cardId) => {
+function likeCard (cardId) {
   return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
     method: 'PUT',
     headers: config.headers
@@ -127,7 +120,7 @@ export const likeCard = (cardId) => {
     });
 };
 
-export const dislikeCard = (cardId) => {
+function dislikeCard (cardId)  {
   return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
     method: 'DELETE',
     headers: config.headers
@@ -141,6 +134,17 @@ export const dislikeCard = (cardId) => {
     });
 };
 
-export const loadInitialCards = () => {
+function loadInitialCards () {
   return getCards();
+};
+
+export {
+  getMyProfile,
+  getCards,
+  editMyProfile,
+  addNewCard,
+  deleteCard,
+  likeCard,
+  dislikeCard,
+  loadInitialCards
 };

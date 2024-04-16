@@ -1,5 +1,5 @@
-import { openModal, closeModal } from './modal.js';
-import { updateAvatar } from '../index.js';
+import { openModal, closeModal} from './modal.js';
+import { updateAvatar } from './api.js';
 
 // Функция для обработки отправки формы обновления аватара
 export function handleAvatarFormSubmit(evt) {
@@ -17,7 +17,7 @@ export function handleAvatarFormSubmit(evt) {
 }
 
 // Функция для обновления аватара на странице
-function updateAvatarOnPage(avatarUrl) {
+export function updateAvatarOnPage(avatarUrl) {
   const profileImage = document.querySelector('.profile__image');
   profileImage.src = avatarUrl;
 }
