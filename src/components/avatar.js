@@ -1,14 +1,14 @@
-import { openModal, closeModal} from './modal.js';
-import { updateAvatar } from './api.js';
+import { openModal, closeModal } from './modal.js';
+import { updateAvatar, getMyProfile } from './api.js'; // Импортируем функцию getMyProfile
 
 // Функция для обработки отправки формы обновления аватара
 export function handleAvatarFormSubmit(evt) {
   evt.preventDefault();
   const avatarUrl = document.getElementById('avatar__input').value;
   updateAvatar(avatarUrl)
-    .then(() => {
+    .then((profile) => {
       // Если запрос успешен, обновляем аватар на странице и закрываем модальное окно
-      updateAvatarOnPage(avatarUrl);
+      updateAvatarOnPage(profile.avatar);
       closeAvatarModal();
     })
     .catch((err) => {
@@ -33,3 +33,15 @@ export function closeAvatarModal() {
   const modalWindow = document.querySelector('.popup_type_new-avatar');
   closeModal(modalWindow);
 }
+
+window.onload = function () {
+  getMyProfile()
+    .then(function (profile) {
+      if (profile) {
+        updateAvatarOnPage(profile.avatar); // Обновляем аватар на странице
+      }
+    })
+    .catch(function (error) {
+      console.error('Ошибка при загрузке аватара:', error);
+    });
+};

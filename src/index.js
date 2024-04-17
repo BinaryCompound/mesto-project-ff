@@ -25,12 +25,16 @@ import {
     addCardForm,
     cardNameInput,
     cardLinkInput,
-    profileImage
+    profileImage,
+    photoButton,
+    profileDialog
 } from './components/constants.js';
+
 
 import {
     getMyProfile,
     getCards,
+    updateAvatar,
     editMyProfile,
     addNewCard,
     deleteCard,
@@ -49,7 +53,7 @@ function handleFormSubmit(form, handleSubmit, closeModalCallback) {
 }
 
 // Функция для обработки отправки формы добавления карточки
-function handleAddCardFormSubmit(evt) {
+function handleAddCardFormSubmit() {
     const cardNameValue = cardNameInput.value;
     const cardLinkValue = cardLinkInput.value;
     addNewCard({ name: cardNameValue, link: cardLinkValue })
@@ -65,6 +69,7 @@ function handleAddCardFormSubmit(evt) {
 
 // Функция для обработки отправки формы редактирования профиля
 function handleFormEditProfileSubmit(evt) {
+    evt.preventDefault();
     const newName = nameInput.value;
     const newDescription = descriptionInput.value;
     profileName.textContent = newName;
@@ -92,33 +97,6 @@ function createAndAddCardToContainer(cardData) {
     // Добавляем обработчик события на кнопку лайка для каждой созданной карточки
     cardElement.querySelector('.card__like-button').addEventListener('click', handleLikeButtonClick);
 }
-
-const photoButton = document.querySelector(".profile__image-button");
-const profileDialog = document.querySelector(".popup_type_new-avatar");
-
-photoButton.addEventListener("click", () => {
-  profileDialog.classList.add("popup_is-opened");
-
-  profileDialog.querySelector(".popup__close").addEventListener("click", () => {
-    profileDialog.classList.remove("popup_is-opened");
-
-    // Добавляем код для обновления аватара
-    const avatarUrlInput = document.getElementById('avatar__input');
-    const avatarUrl = avatarUrlInput.value;
-
-    // Здесь можно выполнить отправку данных на сервер для обновления аватара
-    // Предположим, что запрос успешно выполнен
-
-    // После успешного выполнения запроса обновляем аватар на странице
-    const profileImage = document.querySelector('.profile__image');
-    profileImage.src = avatarUrl;
-
-    // Очищаем значение поля ввода после обновления аватара
-    avatarUrlInput.value = '';
-  });
-});
-
-
 
 // Функция для обработки события клика на изображение карточки
 function handleImageClick(imageSrc, imageName) {
