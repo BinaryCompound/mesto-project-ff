@@ -33,3 +33,4 @@ export function handleLike(likeButton) {
 export function deleteCard(cardElement) {
     cardElement.remove();
 }
+

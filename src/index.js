@@ -67,7 +67,8 @@ function handleAddCardFormSubmit() {
         });
 }
 
-// Функция для обработки отправки формы редактирования профиля
+formEditProfile.addEventListener('submit', handleFormEditProfileSubmit);
+
 function handleFormEditProfileSubmit(evt) {
     evt.preventDefault();
     const newName = nameInput.value;
@@ -85,6 +86,27 @@ function clearForm(form) {
     form.reset();
 }
 
+window.addEventListener('load', function () {
+    getMyProfile()
+      .then(function (profile) {
+        if (profile) {
+          updateProfileOnPage(profile);
+        }
+      })
+      .catch(function (error) {
+        console.error('Ошибка при загрузке профиля:', error);
+      });
+  });
+  
+  function updateProfileOnPage(profile) {
+    const nameElement = document.querySelector('.profile__title');
+    const descriptionElement = document.querySelector('.profile__description');
+  
+    if (nameElement && descriptionElement) {
+      nameElement.textContent = profile.name;
+      descriptionElement.textContent = profile.description;
+    }
+  }
 // Функция для добавления карточки в контейнер
 function addCardToContainer(cardElement) {
     cardContainer.prepend(cardElement);
@@ -105,6 +127,24 @@ function handleImageClick(imageSrc, imageName) {
     popupCaption.textContent = imageName;
     openModal(popupImage);
 }
+
+function updateCardsOnPage(cards) {
+    cards.forEach(cardData => {
+        createAndAddCardToContainer(cardData);
+    });
+}
+
+window.addEventListener('load', function () {
+    getCards()
+        .then(function (cards) {
+            if (cards) {
+                updateCardsOnPage(cards);
+            }
+        })
+        .catch(function (error) {
+            console.error('Ошибка при загрузке карточек:', error);
+        });
+});
 
 // Добавление слушателя для кнопки открытия формы добавления карточки
 buttonOpenAddCard.addEventListener('click', () => openModal(popUpAddCard));

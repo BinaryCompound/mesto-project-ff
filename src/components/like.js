@@ -1,4 +1,5 @@
 import { likeCard } from './api.js';
+import { likeCounters } from "./constants.js";
 
 // Функция для обновления счетчика лайков на карточке
 export function updateLikesCounter(cardElement, likesCount) {
@@ -34,3 +35,14 @@ export function handleLikeButtonClick(event) {
             });
     }
 }
+
+likeCounters.forEach((counter) => {
+    // Получаем текущую карточку
+    const cardElement = counter.closest('.places__item');
+
+    // Получаем массив пользователей, лайкнувших текущую карточку
+    const likes = cardElement.likes || [];
+
+    // Устанавливаем текст счетчика лайков равным количеству лайков
+    counter.textContent = likes.length.toString();
+});
