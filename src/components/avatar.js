@@ -34,7 +34,7 @@ export function closeAvatarModal() {
   closeModal(modalWindow);
 }
 
-window.addEventListener('load', function () {
+window.addEventListener('load', () => {
   getMyProfile()
     .then(function (profile) {
       if (profile) {
@@ -43,5 +43,5 @@ window.addEventListener('load', function () {
     })
     .catch(function (error) {
       console.error('Ошибка при загрузке аватара:', error);
-    });
-});
+    })
+})

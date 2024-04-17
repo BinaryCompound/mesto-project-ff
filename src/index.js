@@ -1,5 +1,6 @@
+// Импорт стилей и компонентов
 import './styles/index.css';
-import { createCard, handleLike } from './components/card.js';
+import { renderCards, createCardElement } from './components/card.js';
 import { openModal, closeModal } from './components/modal.js';
 import { enableValidation } from './components/validation.js';
 import { openAvatarModal, handleAvatarFormSubmit, closeAvatarModal } from './components/avatar.js';
@@ -30,17 +31,9 @@ import {
     profileDialog
 } from './components/constants.js';
 
-
 import {
-    getMyProfile,
-    getCards,
-    updateAvatar,
     editMyProfile,
     addNewCard,
-    deleteCard,
-    likeCard,
-    dislikeCard,
-    loadInitialCards
 } from './components/api.js'
 
 // Общая функция для обработки формы и закрытия модального окна
@@ -67,52 +60,60 @@ function handleAddCardFormSubmit() {
         });
 }
 
-formEditProfile.addEventListener('submit', handleFormEditProfileSubmit);
-
+// Функция для обработки отправки формы редактирования профиля
 function handleFormEditProfileSubmit(evt) {
     evt.preventDefault();
     const newName = nameInput.value;
     const newDescription = descriptionInput.value;
-    profileName.textContent = newName;
-    profileDescription.textContent = newDescription;
+    // Вызываем функцию editMyProfile для отправки данных на сервер
     editMyProfile({ name: newName, about: newDescription })
+        .then((data) => {
+            // Если запрос успешен, сохраняем данные профиля в localStorage
+            saveProfileDataLocally(data);
+            // Обновляем данные профиля на странице
+            updateProfileData(data);
+            clearForm(editMyProfileForm); // Очищаем форму после успешного сохранения
+        })
         .catch((err) => {
             console.error('Ошибка при сохранении профиля:', err);
         });
 }
 
-// Функция для очистки формы
-function clearForm(form) {
-    form.reset();
+// Функция для сохранения данных профиля в localStorage
+function saveProfileDataLocally(data) {
+    localStorage.setItem('profileData', JSON.stringify(data));
 }
 
-window.addEventListener('load', function () {
-    getMyProfile()
-      .then(function (profile) {
-        if (profile) {
-          updateProfileOnPage(profile);
-        }
-      })
-      .catch(function (error) {
-        console.error('Ошибка при загрузке профиля:', error);
-      });
-  });
-  
-  function updateProfileOnPage(profile) {
-    const nameElement = document.querySelector('.profile__title');
-    const descriptionElement = document.querySelector('.profile__description');
-  
-    if (nameElement && descriptionElement) {
-      nameElement.textContent = profile.name;
-      descriptionElement.textContent = profile.description;
+// Функция для обновления данных профиля на странице
+function updateProfileData(data) {
+    // Обновляем данные профиля на странице
+    profileName.textContent = data.name;
+    profileDescription.textContent = data.about;
+}
+
+// Функция для загрузки данных профиля при загрузке страницы
+function loadProfileData() {
+    const storedData = localStorage.getItem('profileData');
+    if (storedData) {
+        const data = JSON.parse(storedData);
+        updateProfileData(data);
+        // Заполняем значения инпутов данными из сервера
+        nameInput.value = data.name;
+        descriptionInput.value = data.about;
     }
-  }
+}
+
+// Вызываем функцию загрузки данных профиля при загрузке страницы
+loadProfileData();
+
+
 // Функция для добавления карточки в контейнер
 function addCardToContainer(cardElement) {
     cardContainer.prepend(cardElement);
 }
 
 // Функция для создания и добавления карточки в контейнер
+
 function createAndAddCardToContainer(cardData) {
     const cardElement = createCard(cardData, handleLike, handleImageClick);
     addCardToContainer(cardElement);
@@ -127,24 +128,6 @@ function handleImageClick(imageSrc, imageName) {
     popupCaption.textContent = imageName;
     openModal(popupImage);
 }
-
-function updateCardsOnPage(cards) {
-    cards.forEach(cardData => {
-        createAndAddCardToContainer(cardData);
-    });
-}
-
-window.addEventListener('load', function () {
-    getCards()
-        .then(function (cards) {
-            if (cards) {
-                updateCardsOnPage(cards);
-            }
-        })
-        .catch(function (error) {
-            console.error('Ошибка при загрузке карточек:', error);
-        });
-});
 
 // Добавление слушателя для кнопки открытия формы добавления карточки
 buttonOpenAddCard.addEventListener('click', () => openModal(popUpAddCard));
@@ -190,6 +173,8 @@ function setupModalWindows() {
 
 // Добавление слушателей событий при загрузке DOM
 document.addEventListener('DOMContentLoaded', function () {
+
+    renderCards();
 
     // Включение валидации для форм
     enableValidation({
