@@ -1,16 +1,13 @@
 // Получение карточек и их вывод на страницу
-import { getCards } from "./api";
+import { getCards, deleteCard, likeCard, dislikeCard, getMyProfile } from "./api";
 import { cardContainer } from "./constants.js";
-import { deleteCard } from "./api";
-import { likeCard, dislikeCard } from "./api";
-import { addNewCard } from "./api";
 
-export function renderCards() {
+export function renderCards(profile, handleImageClick) {
     getCards()
         .then(cards => {
             cards.forEach(card => {
-                const cardElement = createCardElement(card); // Создаем элемент карточки
-                cardContainer.appendChild(cardElement); // Добавляем элемент карточки в контейнер
+                const cardElement = createCardElement(card, profile, handleImageClick);
+                cardContainer.appendChild(cardElement);
             });
         })
         .catch(error => {
@@ -18,8 +15,7 @@ export function renderCards() {
         });
 }
 
-// Функция для создания элемента карточки
-export function createCardElement(cardData) {
+export function createCardElement(cardData, profile, handleImageClick) {
     // Создание элемента карточки из шаблона
     const template = document.querySelector('#card-template');
     const cardElement = template.content.cloneNode(true);
@@ -30,7 +26,6 @@ export function createCardElement(cardData) {
     const deleteButton = cardElement.querySelector('.card__delete-button');
     const likeButton = cardElement.querySelector('.card__like-button');
     const likeCounter = cardElement.querySelector('.card__like-counter');
-    const card = cardElement.querySelector('.card');
 
     cardImage.src = cardData.link;
     cardImage.alt = cardData.name;
@@ -40,39 +35,38 @@ export function createCardElement(cardData) {
 
     // Добавление обработчиков событий
     deleteButton.addEventListener('click', () => {
-        // Находим родительский элемент карточки (элемент списка)
-        const cardListItem = deleteButton.closest('.card');
-
-        // Проверяем, найден ли родительский элемент
-        if (cardListItem) {
-            // Удаляем карточку из DOM
-            cardListItem.remove();
-
-            // Получаем ID карточки из атрибута data-card-id кнопки лайка
-            const cardId = likeButton.dataset.cardId;
-
-            // Вызываем функцию удаления карточки
-            deleteCard(cardId)
-                .then(() => {
-                    console.log('Карточка успешно удалена');
-                })
-                .catch(error => {
-                    console.error('Ошибка при удалении карточки:', error);
-                });
+        // Проверяем, является ли пользователь владельцем карточки
+        if (cardData.owner._id !== profile._id) {
+            console.error('Нельзя удалять чужие карточки');
+            return;
         }
+
+        // Удаляем карточку из DOM
+        const cardListItem = deleteButton.closest('.card');
+        cardListItem.remove();
+
+        // Получаем ID карточки из атрибута data-card-id кнопки лайка
+        const cardId = likeButton.dataset.cardId;
+
+        // Вызываем функцию удаления карточки
+        deleteCard(cardId)
+            .then(() => {
+                console.log('Карточка успешно удалена');
+            })
+            .catch(error => {
+                console.error('Ошибка при удалении карточки:', error);
+            });
     });
 
     // Добавляем обработчик события для кнопки лайка
     likeButton.addEventListener('click', () => {
         // Получаем ID карточки из атрибута data-card-id кнопки лайка
         const cardId = likeButton.dataset.cardId;
-        
-        // Проверяем, был ли уже поставлен лайк
+
+        // Обработка лайка
         if (likeButton.classList.contains('card__like-button_is-active')) {
-            // Если был, то отправляем запрос на сервер для дизлайка карточки
             dislikeCard(cardId)
                 .then(response => {
-                    // Если запрос успешен, обновляем состояние кнопки и счетчика лайков
                     likeButton.classList.remove('card__like-button_is-active');
                     likeCounter.textContent = response.likes.length;
                 })
@@ -80,10 +74,8 @@ export function createCardElement(cardData) {
                     console.error('Ошибка при дизлайке карточки:', error);
                 });
         } else {
-            // Если лайка еще не было, то отправляем запрос на сервер для установки лайка
             likeCard(cardId)
                 .then(response => {
-                    // Если запрос успешен, обновляем состояние кнопки и счетчика лайков
                     likeButton.classList.add('card__like-button_is-active');
                     likeCounter.textContent = response.likes.length;
                 })
@@ -91,6 +83,11 @@ export function createCardElement(cardData) {
                     console.error('Ошибка при лайке карточки:', error);
                 });
         }
+    });
+
+    // Добавляем обработчик события для клика по изображению карточки
+    cardImage.addEventListener('click', () => {
+        handleImageClick(cardData);
     });
 
     return cardElement;

@@ -15,7 +15,7 @@ export function handleLikeButtonClick(event) {
 
     // Если карточка уже была лайкнута, то убираем лайк
     if (isLiked) {
-        likeButton.classList.remove('card__like-button_liked');
+        likeButton.classList.add('card__like-button_liked');
         likeCard(cardId)
             .then((data) => {
                 updateLikesCounter(cardElement, data.likesCount);
@@ -24,7 +24,7 @@ export function handleLikeButtonClick(event) {
                 console.error('Ошибка при удалении лайка:', err);
             });
     } else {
-        likeButton.classList.add('card__like-button_liked');
+        likeButton.classList.remove('card__like-button_liked');
         likeCard(cardId)
             .then((data) => {
                 updateLikesCounter(cardElement, data.likesCount);

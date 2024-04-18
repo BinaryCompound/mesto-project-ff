@@ -18,17 +18,13 @@ import {
     cardContainer,
     popUpEditProfile,
     buttonOpenPopupProfile,
-    buttonClosePopupProfile,
     popUpAddCard,
     buttonOpenAddCard,
-    buttonCloseAddCard,
     formEditProfile,
     addCardForm,
     cardNameInput,
     cardLinkInput,
     profileImage,
-    photoButton,
-    profileDialog
 } from './components/constants.js';
 
 import {
