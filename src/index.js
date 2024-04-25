@@ -12,19 +12,20 @@ import {
     profileDescription,
     profileTitleStatic,
     profileDescriptionStatic,
-    popupImage,
-    popupImageElement,
-    popupCaption,
     cardContainer,
     popUpEditProfile,
     buttonOpenPopupProfile,
+    buttonClosePopupProfile,
     popUpAddCard,
     buttonOpenAddCard,
+    buttonCloseAddCard,
     formEditProfile,
     addCardForm,
     cardNameInput,
     cardLinkInput,
     profileImage,
+    photoButton,
+    profileDialog
 } from './components/constants.js';
 
 import {
@@ -38,6 +39,14 @@ function handleFormSubmit(form, handleSubmit, closeModalCallback) {
         evt.preventDefault();
         handleSubmit(evt);
         closeModalCallback();
+    });
+}
+
+// Очищает содержимое полей в форме
+function clearForm(form) {
+    const inputFields = form.querySelectorAll('input');
+    inputFields.forEach(input => {
+        input.value = ''; // Очищаем значение поля ввода
     });
 }
 
@@ -111,18 +120,11 @@ function addCardToContainer(cardElement) {
 // Функция для создания и добавления карточки в контейнер
 
 function createAndAddCardToContainer(cardData) {
-    const cardElement = createCard(cardData, handleLike, handleImageClick);
+    const cardElement = createCardElement(cardData);
     addCardToContainer(cardElement);
     // Добавляем обработчик события на кнопку лайка для каждой созданной карточки
-    cardElement.querySelector('.card__like-button').addEventListener('click', handleLikeButtonClick);
-}
-
-// Функция для обработки события клика на изображение карточки
-function handleImageClick(imageSrc, imageName) {
-    popupImageElement.src = imageSrc;
-    popupImageElement.alt = imageName;
-    popupCaption.textContent = imageName;
-    openModal(popupImage);
+    cardElement.querySelector('.card__like-button');
+    cardElement.addEventListener('click', handleLikeButtonClick);
 }
 
 // Добавление слушателя для кнопки открытия формы добавления карточки

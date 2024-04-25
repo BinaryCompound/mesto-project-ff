@@ -1,22 +1,46 @@
 // Получение карточек и их вывод на страницу
-import { getCards, deleteCard, likeCard, dislikeCard, getMyProfile } from "./api";
+import { getCards, getMyProfile } from "./api";
 import { cardContainer } from "./constants.js";
+import { deleteCard } from "./api";
+import { likeCard, dislikeCard } from "./api";
+import { openModal } from "./modal.js";
+import {
+    popupImage,
+    popupImageElement,
+    popupCaption, // предположим, что у вас есть функция, возвращающая идентификатор текущего пользователя
+} from "./constants.js";
 
-export function renderCards(profile, handleImageClick) {
-    getCards()
-        .then(cards => {
-            cards.forEach(card => {
-                const cardElement = createCardElement(card, profile, handleImageClick);
-                cardContainer.appendChild(cardElement);
-            });
-        })
-        .catch(error => {
-            console.error('Ошибка при загрузке карточек:', error);
+getMyProfile()
+    .then(profile => {
+        const userId = profile._id; // Получаем идентификатор текущего пользователя
+        console.log('ID текущего пользователя:', userId);
+
+        // Создаем элементы карточек после получения профиля
+        renderCards(userId);
+    })
+    .catch(error => {
+        console.error('Ошибка при получении профиля:', error);
+    });
+
+export async function renderCards() {
+    try {
+        const profile = await getMyProfile();
+        const userId = profile._id; // Получаем идентификатор текущего пользователя
+        console.log('ID текущего пользователя:', userId);
+
+        const cards = await getCards();
+        cards.forEach(card => {
+            const cardElement = createCardElement(card, userId);
+            cardContainer.appendChild(cardElement);
         });
+    } catch (error) {
+        console.error('Ошибка при загрузке профиля или карточек:', error);
+    }
 }
 
-export function createCardElement(cardData, profile, handleImageClick) {
-    // Создание элемента карточки из шаблона
+// Функция для создания элемента карточки
+export function createCardElement(cardData, userId) {
+    //Создание элемента карточки из шаблона
     const template = document.querySelector('#card-template');
     const cardElement = template.content.cloneNode(true);
 
@@ -33,29 +57,36 @@ export function createCardElement(cardData, profile, handleImageClick) {
     likeButton.dataset.cardId = cardData._id; // Используем _id карточки
     likeCounter.textContent = cardData.likes.length;
 
+    // Проверяем, создал ли текущий пользователь эту карточку
+    if (cardData.owner._id === userId) {
+        deleteButton.style.display = 'block';
+    } else {
+        deleteButton.style.display = 'none';
+    }
+
+
     // Добавление обработчиков событий
     deleteButton.addEventListener('click', () => {
-        // Проверяем, является ли пользователь владельцем карточки
-        if (cardData.owner._id !== profile._id) {
-            console.error('Нельзя удалять чужие карточки');
-            return;
-        }
-
-        // Удаляем карточку из DOM
+        // Находим родительский элемент карточки (элемент списка)
         const cardListItem = deleteButton.closest('.card');
-        cardListItem.remove();
 
-        // Получаем ID карточки из атрибута data-card-id кнопки лайка
-        const cardId = likeButton.dataset.cardId;
+        // Проверяем, найден ли родительский элемент
+        if (cardListItem) {
+            // Удаляем карточку из DOM
+            cardListItem.remove();
 
-        // Вызываем функцию удаления карточки
-        deleteCard(cardId)
-            .then(() => {
-                console.log('Карточка успешно удалена');
-            })
-            .catch(error => {
-                console.error('Ошибка при удалении карточки:', error);
-            });
+            // Получаем ID карточки из атрибута data-card-id кнопки лайка
+            const cardId = likeButton.dataset.cardId;
+
+            // Вызываем функцию удаления карточки
+            deleteCard(cardId)
+                .then(() => {
+                    console.log('Карточка успешно удалена');
+                })
+                .catch(error => {
+                    console.error('Ошибка при удалении карточки:', error);
+                });
+        }
     });
 
     // Добавляем обработчик события для кнопки лайка
@@ -63,10 +94,12 @@ export function createCardElement(cardData, profile, handleImageClick) {
         // Получаем ID карточки из атрибута data-card-id кнопки лайка
         const cardId = likeButton.dataset.cardId;
 
-        // Обработка лайка
+        // Проверяем, был ли уже поставлен лайк
         if (likeButton.classList.contains('card__like-button_is-active')) {
+            // Если был, то отправляем запрос на сервер для дизлайка карточки
             dislikeCard(cardId)
                 .then(response => {
+                    // Если запрос успешен, обновляем состояние кнопки и счетчика лайков
                     likeButton.classList.remove('card__like-button_is-active');
                     likeCounter.textContent = response.likes.length;
                 })
@@ -74,8 +107,10 @@ export function createCardElement(cardData, profile, handleImageClick) {
                     console.error('Ошибка при дизлайке карточки:', error);
                 });
         } else {
+            // Если лайка еще не было, то отправляем запрос на сервер для установки лайка
             likeCard(cardId)
                 .then(response => {
+                    // Если запрос успешен, обновляем состояние кнопки и счетчика лайков
                     likeButton.classList.add('card__like-button_is-active');
                     likeCounter.textContent = response.likes.length;
                 })
@@ -85,9 +120,17 @@ export function createCardElement(cardData, profile, handleImageClick) {
         }
     });
 
-    // Добавляем обработчик события для клика по изображению карточки
+    // Функция для обработки события клика на изображение карточки
+    function handleImageClick(imageSrc, imageName) {
+        popupImageElement.src = imageSrc;
+        popupImageElement.alt = imageName;
+        popupCaption.textContent = imageName;
+        openModal(popupImage);
+    }
+
+    // Добавляем обработчик события для клика на изображение карточки
     cardImage.addEventListener('click', () => {
-        handleImageClick(cardData);
+        handleImageClick(cardData.link, cardData.name);
     });
 
     return cardElement;

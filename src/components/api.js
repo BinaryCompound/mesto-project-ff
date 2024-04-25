@@ -1,9 +1,9 @@
 import { checkResponse } from './utils';
 
 const config = {
-  baseUrl: 'https://nomoreparties.co/v1/wff-cohort-10',
+  baseUrl: 'https://nomoreparties.co/v1/wff-cohort-12',
   headers: {
-    authorization: 'cd96ad2d-6ac8-4d45-8a99-781f91d662c6',
+    authorization: 'a6c324f3-515d-4107-9910-fdcad5920d1c',
     'Content-Type': 'application/json'
   }
 };
@@ -14,12 +14,12 @@ function getMyProfile() {
   })
     .then(checkResponse) // Проверяем ответ
 };
-
+      
 function getCards() {
   return fetch(`${config.baseUrl}/cards`, {
     headers: config.headers
   })
-    .then(checkResponse) // Проверяем ответ
+    .then(checkResponse)// Проверяем ответ
 };
 
 function updateAvatar(avatar) {
