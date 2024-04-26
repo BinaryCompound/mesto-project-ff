@@ -10,18 +10,6 @@ import {
     popupCaption, // предположим, что у вас есть функция, возвращающая идентификатор текущего пользователя
 } from "./constants.js";
 
-getMyProfile()
-    .then(profile => {
-        const userId = profile._id; // Получаем идентификатор текущего пользователя
-        console.log('ID текущего пользователя:', userId);
-
-        // Создаем элементы карточек после получения профиля
-        renderCards(userId);
-    })
-    .catch(error => {
-        console.error('Ошибка при получении профиля:', error);
-    });
-
 export async function renderCards() {
     try {
         const profile = await getMyProfile();
@@ -118,6 +106,7 @@ export function createCardElement(cardData, userId) {
                     console.error('Ошибка при лайке карточки:', error);
                 });
         }
+        
     });
 
     // Функция для обработки события клика на изображение карточки

@@ -4,7 +4,6 @@ import { renderCards, createCardElement } from './components/card.js';
 import { openModal, closeModal } from './components/modal.js';
 import { enableValidation } from './components/validation.js';
 import { openAvatarModal, handleAvatarFormSubmit, closeAvatarModal } from './components/avatar.js';
-import { handleLikeButtonClick } from './components/like.js';
 import {
     nameInput,
     descriptionInput,
@@ -15,22 +14,21 @@ import {
     cardContainer,
     popUpEditProfile,
     buttonOpenPopupProfile,
-    buttonClosePopupProfile,
     popUpAddCard,
     buttonOpenAddCard,
-    buttonCloseAddCard,
     formEditProfile,
     addCardForm,
     cardNameInput,
     cardLinkInput,
     profileImage,
-    photoButton,
     profileDialog
 } from './components/constants.js';
 
 import {
     editMyProfile,
     addNewCard,
+    getMyProfile,
+    getCards
 } from './components/api.js'
 
 // Общая функция для обработки формы и закрытия модального окна
@@ -122,9 +120,6 @@ function addCardToContainer(cardElement) {
 function createAndAddCardToContainer(cardData) {
     const cardElement = createCardElement(cardData);
     addCardToContainer(cardElement);
-    // Добавляем обработчик события на кнопку лайка для каждой созданной карточки
-    cardElement.querySelector('.card__like-button');
-    cardElement.addEventListener('click', handleLikeButtonClick);
 }
 
 // Добавление слушателя для кнопки открытия формы добавления карточки
@@ -170,7 +165,43 @@ function setupModalWindows() {
 }
 
 // Добавление слушателей событий при загрузке DOM
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async () => {
+
+    try {
+        const [profile, cards] = await Promise.all([getMyProfile(), getCards()]);
+        const userId = profile._id;
+        renderCards(cards, userId);
+    } catch (error) {
+        console.error('Ошибка при загрузке данных:', error);
+    }
+});
+
+// Обработчик открытия формы редактирования профиля
+buttonOpenPopupProfile.addEventListener('click', async () => {
+    try {
+        const profile = await getMyProfile();
+        openModal(popUpEditProfile);
+        formEditProfile.elements['user_name'].value = profile.name;
+        formEditProfile.elements['user_about'].value = profile.about;
+    } catch (error) {
+        console.error('Ошибка при загрузке данных пользователя:', error);
+    }
+});
+
+// Обработчик открытия формы добавления карточки
+buttonOpenAddCard.addEventListener('click', () => openModal(popUpAddCard));
+
+// Обработчик закрытия модального окна при клике на оверлей или кнопку закрытия
+document.querySelectorAll('.popup').forEach(modal => {
+    modal.addEventListener('click', event => {
+        if (event.target === modal || event.target.classList.contains('popup__close')) {
+            closeModal(modal);
+        }
+    });
+});
+
+// Обработчик открытия модального окна смены аватара
+profileImage.addEventListener('click', () => openModal(profileDialog));
 
     renderCards();
 
@@ -185,4 +216,3 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Добавление слушателей для открытия/закрытия модальных окон
     setupModalWindows();
-});
