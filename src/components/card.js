@@ -1,8 +1,7 @@
 // Получение карточек и их вывод на страницу
 import { getCards, getMyProfile } from "./api";
 import { cardContainer } from "./constants.js";
-import { deleteCard } from "./api";
-import { likeCard, dislikeCard } from "./api";
+import { likeCard, dislikeCard, deleteCard } from "./api";
 import { openModal } from "./modal.js";
 import {
     popupImage,
@@ -52,28 +51,22 @@ export function createCardElement(cardData, userId) {
         deleteButton.style.display = 'none';
     }
 
-
     // Добавление обработчиков событий
-    deleteButton.addEventListener('click', () => {
-        // Находим родительский элемент карточки (элемент списка)
-        const cardListItem = deleteButton.closest('.card');
+    deleteButton.addEventListener('click', async () => {
+        try {
+            // Находим родительский элемент карточки (элемент списка)
+            const cardListItem = deleteButton.closest('.card');
+            console.log(cardListItem)
+            // Получаем ID карточки из атрибута data-card-id кнопки удаления
+            const cardId = deleteButton.dataset.cardId;
 
-        // Проверяем, найден ли родительский элемент
-        if (cardListItem) {
-            // Удаляем карточку из DOM
+            // Вызываем функцию для удаления карточки
+            await deleteCard(cardId);
+
+            // Удаляем элемент карточки из DOM
             cardListItem.remove();
-
-            // Получаем ID карточки из атрибута data-card-id кнопки лайка
-            const cardId = likeButton.dataset.cardId;
-
-            // Вызываем функцию удаления карточки
-            deleteCard(cardId)
-                .then(() => {
-                    console.log('Карточка успешно удалена');
-                })
-                .catch(error => {
-                    console.error('Ошибка при удалении карточки:', error);
-                });
+        } catch (error) {
+            console.error('Ошибка при удалении карточки:', error);
         }
     });
 
@@ -106,7 +99,7 @@ export function createCardElement(cardData, userId) {
                     console.error('Ошибка при лайке карточки:', error);
                 });
         }
-        
+
     });
 
     // Функция для обработки события клика на изображение карточки

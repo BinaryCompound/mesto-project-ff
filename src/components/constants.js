@@ -21,4 +21,4 @@ export const cardNameInput = document.querySelector('.popup__input_type_card-nam
 export const cardLinkInput = document.querySelector('.popup__input_type_url');
 export const profileImage = document.querySelector('.profile__image');
 export const photoButton = document.querySelector('.profile__image-button');
-export const profileDialog = document.querySelector(".popup_type_new-avatar");
+export const profileDialog = document.querySelector('.popup_type_new-avatar');
