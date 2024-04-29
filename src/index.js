@@ -1,6 +1,6 @@
 // Импорт стилей и компонентов
 import './styles/index.css';
-import { renderCards, createCardElement} from './components/card.js';
+import { renderCards} from './components/card.js';
 import { openModal, closeModal } from './components/modal.js';
 import { enableValidation } from './components/validation.js';
 import { openAvatarModal, handleAvatarFormSubmit, closeAvatarModal } from './components/avatar.js';
@@ -122,28 +122,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 });
 
-// Функция для добавления карточки в контейнер
-function addCardToContainer(cardElement) {
-    cardContainer.prepend(cardElement);
-}
-
 // Добавление слушателя для кнопки открытия формы добавления карточки
 buttonOpenAddCard.addEventListener('click', () => openModal(popUpAddCard));
 
 // Обработчик отправки формы добавления карточки
-function handleAddCardFormSubmit(evt, closeModal) {
+function handleAddCardFormSubmit(evt) {
     evt.preventDefault();
 
-    // Создаем объект FormData для сбора данных из формы
-    const formData = new FormData(addCardForm);
-    console.log('Данные, отправляемые на сервер:', formData);
-    for (let pair of formData.entries()) {
-        console.log(pair[0] + ', ' + pair[1]);
-    }
-    // Здесь выполняем отправку данных формы на сервер
-    addNewCard(formData)
-        .then((data) => {
+    // Получаем значения полей формы
+    const cardName = cardNameInput.value; 
+    const cardLink = cardLinkInput.value;
 
+    // Создаем объект с данными для отправки на сервер
+    const cardData = {
+        name: cardName,
+        link: cardLink
+    };
+
+    // Здесь выполняем отправку данных формы на сервер
+    addNewCard(cardData)
+        .then((data) => {
             console.log('Данные после успешного добавления карточки:', data);
             // Если запрос успешен, закрываем модальное окно
             closeModal(popUpAddCard);
@@ -155,6 +153,11 @@ function handleAddCardFormSubmit(evt, closeModal) {
         });
 }
 
+// Добавление слушателя события для формы добавления карточки
+addCardForm.addEventListener('submit', function(evt) {
+    handleAddCardFormSubmit(evt);
+    closeModal(popUpAddCard);
+});
 
 // Добавление слушателя события для формы добавления карточки
 handleFormSubmit(addCardForm, handleAddCardFormSubmit, () => closeModal(popUpAddCard));

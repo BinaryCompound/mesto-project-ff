@@ -41,8 +41,10 @@ export function createCardElement(cardData, userId) {
     cardImage.src = cardData.link;
     cardImage.alt = cardData.name;
     cardTitle.textContent = cardData.name;
+    deleteButton.dataset.cardId = cardData._id;
     likeButton.dataset.cardId = cardData._id; // Используем _id карточки
     likeCounter.textContent = cardData.likes.length;
+    console.log(cardData._id)
 
     // Проверяем, создал ли текущий пользователь эту карточку
     if (cardData.owner._id === userId) {
@@ -51,12 +53,10 @@ export function createCardElement(cardData, userId) {
         deleteButton.style.display = 'none';
     }
 
-    // Добавление обработчиков событий
     deleteButton.addEventListener('click', async () => {
         try {
             // Находим родительский элемент карточки (элемент списка)
             const cardListItem = deleteButton.closest('.card');
-            console.log(cardListItem)
             // Получаем ID карточки из атрибута data-card-id кнопки удаления
             const cardId = deleteButton.dataset.cardId;
 
@@ -64,7 +64,23 @@ export function createCardElement(cardData, userId) {
             await deleteCard(cardId);
 
             // Удаляем элемент карточки из DOM
-            cardListItem.remove();
+            cardListItem.remove(); deleteButton.addEventListener('click', async () => {
+                try {
+                    // Находим родительский элемент карточки (элемент списка)
+                    const cardListItem = deleteButton.closest('.card');
+                    // Получаем ID карточки из атрибута data-card-id кнопки удаления
+                    console.log('ID карточки:', deleteButton.dataset.cardId);
+                    const cardId = deleteButton.dataset.cardId;
+
+                    // Вызываем функцию для удаления карточки
+                    await deleteCard(cardId);
+
+                    // Удаляем элемент карточки из DOM
+                    cardListItem.remove();
+                } catch (error) {
+                    console.error('Ошибка при удалении карточки:', error);
+                }
+            });
         } catch (error) {
             console.error('Ошибка при удалении карточки:', error);
         }
