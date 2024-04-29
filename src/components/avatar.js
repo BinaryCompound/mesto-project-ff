@@ -1,9 +1,11 @@
 import { openModal, closeModal } from './modal.js';
 import { updateAvatar, getMyProfile } from './api.js';
+import { clearForm } from '../index.js'; // Подставьте ваш файл с утилитами для работы с формой
 
 // Глобальные переменные для DOM элементов
 const profileImage = document.querySelector('.profile__image');
 const avatarModalWindow = document.querySelector('.popup_type_new-avatar');
+const avatarForm = document.forms['edit_avatar'];
 
 // Функция для обработки отправки формы обновления аватара
 export function handleAvatarFormSubmit(evt) {
@@ -14,6 +16,7 @@ export function handleAvatarFormSubmit(evt) {
       // Если запрос успешен, обновляем аватар на странице и закрываем модальное окно
       updateAvatarOnPage(profile.avatar);
       closeAvatarModal();
+      clearForm(avatarForm); // Очищаем форму после успешной отправки
     })
     .catch((err) => {
       console.error('Ошибка при обновлении аватара:', err);

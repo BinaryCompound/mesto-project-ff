@@ -1,6 +1,6 @@
 // Импорт стилей и компонентов
 import './styles/index.css';
-import { renderCards} from './components/card.js';
+import { renderCards } from './components/card.js';
 import { openModal, closeModal } from './components/modal.js';
 import { enableValidation } from './components/validation.js';
 import { openAvatarModal, handleAvatarFormSubmit, closeAvatarModal } from './components/avatar.js';
@@ -29,7 +29,7 @@ import {
     addNewCard,
     getMyProfile,
     getCards
-} from './components/api.js'
+} from './components/api.js';
 
 // Общая функция для обработки формы с возможностью закрытия модального окна
 function handleFormSubmit(form, handleSubmit, closeModal) {
@@ -40,7 +40,7 @@ function handleFormSubmit(form, handleSubmit, closeModal) {
 }
 
 // Очищает содержимое полей в форме
-function clearForm(form) {
+export function clearForm(form) {
     const inputFields = form.querySelectorAll('input');
     inputFields.forEach(input => {
         input.value = ''; // Очищаем значение поля ввода
@@ -133,6 +133,12 @@ function handleAddCardFormSubmit(evt) {
     const cardName = cardNameInput.value; 
     const cardLink = cardLinkInput.value;
 
+    // Получаем кнопку отправки формы
+    const addCardButton = addCardForm.querySelector('.popup__button');
+    
+    // Устанавливаем текст кнопки на "Сохранение..."
+    addCardButton.textContent = 'Сохранение...';
+
     // Создаем объект с данными для отправки на сервер
     const cardData = {
         name: cardName,
@@ -150,16 +156,14 @@ function handleAddCardFormSubmit(evt) {
         })
         .catch((error) => {
             console.error('Ошибка при добавлении карточки:', error);
+        })
+        .finally(() => {
+            // Возвращаем исходный текст кнопки
+            addCardButton.textContent = 'Создать';
         });
 }
 
-// Добавление слушателя события для формы добавления карточки
-addCardForm.addEventListener('submit', function(evt) {
-    handleAddCardFormSubmit(evt);
-    closeModal(popUpAddCard);
-});
-
-// Добавление слушателя события для формы добавления карточки
+// Добавление слушателя для формы добавления карточки
 handleFormSubmit(addCardForm, handleAddCardFormSubmit, () => closeModal(popUpAddCard));
 
 // Добавление слушателя для кнопки открытия формы редактирования профиля
