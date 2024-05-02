@@ -1,37 +1,31 @@
-// Получение карточек и их вывод на страницу
-import { getCards, getMyProfile } from "./api";
+import { getCards, getMyProfile } from "./api.js";
 import { cardContainer } from "./constants.js";
-import { likeCard, dislikeCard, deleteCard } from "./api";
-import { openModal } from "./modal.js";
-import {
-    popupImage,
-    popupImageElement,
-    popupCaption, // предположим, что у вас есть функция, возвращающая идентификатор текущего пользователя
-} from "./constants.js";
+import { likeCard, dislikeCard, deleteCard } from "./api.js";
+import { handleImageClick } from "../index.js";
 
 export async function renderCards() {
     try {
         const profile = await getMyProfile();
-        const userId = profile._id; // Получаем идентификатор текущего пользователя
-        console.log('ID текущего пользователя:', userId);
+        const userId = profile._id;
 
         const cards = await getCards();
         cards.forEach(card => {
-            const cardElement = createCardElement(card, userId);
+            const cardElement = createCardElement(card, userId, handleImageClick);
             cardContainer.appendChild(cardElement);
         });
     } catch (error) {
-        console.error('Ошибка при загрузке профиля или карточек:', error);
+        console.error('Ошибка при загрузке профиля или карточек:', error.message);
     }
 }
 
-// Функция для создания элемента карточки
-export function createCardElement(cardData, userId) {
-    //Создание элемента карточки из шаблона
+ function createCardElement(cardData, userId, handleImageClick) { // Добавлен аргумент handleImageClick
     const template = document.querySelector('#card-template');
-    const cardElement = template.content.cloneNode(true);
+    if (!template) {
+        console.error('Шаблон карточки не найден');
+        return null;
+    }
 
-    // Установка данных карточки
+    const cardElement = template.content.cloneNode(true);
     const cardImage = cardElement.querySelector('.card__image');
     const cardTitle = cardElement.querySelector('.card__title');
     const deleteButton = cardElement.querySelector('.card__delete-button');
@@ -42,94 +36,38 @@ export function createCardElement(cardData, userId) {
     cardImage.alt = cardData.name;
     cardTitle.textContent = cardData.name;
     deleteButton.dataset.cardId = cardData._id;
-    likeButton.dataset.cardId = cardData._id; // Используем _id карточки
+    likeButton.dataset.cardId = cardData._id;
     likeCounter.textContent = cardData.likes.length;
-    console.log(cardData._id)
 
-    // Проверяем, создал ли текущий пользователь эту карточку
-    if (cardData.owner._id === userId) {
-        deleteButton.style.display = 'block';
-    } else {
-        deleteButton.style.display = 'none';
-    }
+    const isCurrentUserCard = cardData.owner._id === userId;
+    deleteButton.style.display = isCurrentUserCard ? 'block' : 'none';
 
-    deleteButton.addEventListener('click', async () => {
-        try {
-            // Находим родительский элемент карточки (элемент списка)
-            const cardListItem = deleteButton.closest('.card');
-            // Получаем ID карточки из атрибута data-card-id кнопки удаления
-            const cardId = deleteButton.dataset.cardId;
-
-            // Вызываем функцию для удаления карточки
-            await deleteCard(cardId);
-
-            // Удаляем элемент карточки из DOM
-            cardListItem.remove(); deleteButton.addEventListener('click', async () => {
-                try {
-                    // Находим родительский элемент карточки (элемент списка)
-                    const cardListItem = deleteButton.closest('.card');
-                    // Получаем ID карточки из атрибута data-card-id кнопки удаления
-                    console.log('ID карточки:', deleteButton.dataset.cardId);
-                    const cardId = deleteButton.dataset.cardId;
-
-                    // Вызываем функцию для удаления карточки
-                    await deleteCard(cardId);
-
-                    // Удаляем элемент карточки из DOM
-                    cardListItem.remove();
-                } catch (error) {
-                    console.error('Ошибка при удалении карточки:', error);
-                }
-            });
-        } catch (error) {
-            console.error('Ошибка при удалении карточки:', error);
-        }
-    });
-
-    // Добавляем обработчик события для кнопки лайка
-    likeButton.addEventListener('click', () => {
-        // Получаем ID карточки из атрибута data-card-id кнопки лайка
-        const cardId = likeButton.dataset.cardId;
-
-        // Проверяем, был ли уже поставлен лайк
-        if (likeButton.classList.contains('card__like-button_is-active')) {
-            // Если был, то отправляем запрос на сервер для дизлайка карточки
-            dislikeCard(cardId)
-                .then(response => {
-                    // Если запрос успешен, обновляем состояние кнопки и счетчика лайков
-                    likeButton.classList.remove('card__like-button_is-active');
-                    likeCounter.textContent = response.likes.length;
-                })
-                .catch(error => {
-                    console.error('Ошибка при дизлайке карточки:', error);
-                });
-        } else {
-            // Если лайка еще не было, то отправляем запрос на сервер для установки лайка
-            likeCard(cardId)
-                .then(response => {
-                    // Если запрос успешен, обновляем состояние кнопки и счетчика лайков
-                    likeButton.classList.add('card__like-button_is-active');
-                    likeCounter.textContent = response.likes.length;
-                })
-                .catch(error => {
-                    console.error('Ошибка при лайке карточки:', error);
-                });
-        }
-
-    });
-
-    // Функция для обработки события клика на изображение карточки
-    function handleImageClick(imageSrc, imageName) {
-        popupImageElement.src = imageSrc;
-        popupImageElement.alt = imageName;
-        popupCaption.textContent = imageName;
-        openModal(popupImage);
-    }
-
-    // Добавляем обработчик события для клика на изображение карточки
-    cardImage.addEventListener('click', () => {
-        handleImageClick(cardData.link, cardData.name);
-    });
+    deleteButton.addEventListener('click', () => handleDeleteButtonClick(deleteButton, cardData._id));
+    likeButton.addEventListener('click', () => handleLikeButtonClick(likeButton, likeCounter, cardData._id));
+    cardImage.addEventListener('click', () => handleImageClick(cardData.link, cardData.name));
 
     return cardElement;
+}
+
+async function handleDeleteButtonClick(deleteButton, cardId) {
+    try {
+        const cardListItem = deleteButton.closest('.card');
+        await deleteCard(cardId);
+        cardListItem.remove();
+    } catch (error) {
+        console.error('Ошибка при удалении карточки:', error.message);
+    }
+}
+
+async function handleLikeButtonClick(likeButton, likeCounter, cardId) {
+    try {
+        const response = likeButton.classList.contains('card__like-button_is-active') ?
+            await dislikeCard(cardId) :
+            await likeCard(cardId);
+
+        likeButton.classList.toggle('card__like-button_is-active');
+        likeCounter.textContent = response.likes.length;
+    } catch (error) {
+        console.error('Ошибка при обработке лайка/дизлайка карточки:', error.message);
+    }
 }

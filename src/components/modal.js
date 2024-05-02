@@ -5,24 +5,10 @@ function handleFormSubmit(form) {
   });
 }
 
+// Функция для открытия модального окна
 export function openModal(modalWindow) {
   modalWindow.classList.add('popup_is-opened');
   document.addEventListener('keydown', closeOnEsc);
-
-  // Получаем форму в модальном окне
-  const form = modalWindow.querySelector('.popup__form');
-  if (form) {
-    // Обрабатываем отправку формы
-    handleFormSubmit(form);
-    // Добавляем обработчик события отправки формы
-    form.addEventListener('submit', (evt) => {
-      // Проверяем, валидна ли форма
-      if (form.checkValidity()) {
-        // Если форма валидна, вызываем функцию закрытия модального окна
-        closeModal(modalWindow);
-      }
-    });
-  }
 }
 
 // Функция для закрытия модального окна

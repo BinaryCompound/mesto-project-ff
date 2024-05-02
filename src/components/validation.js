@@ -1,4 +1,4 @@
-// Объявляем функцию handleFormInput внешними по отношению к validateForm и enableValidation
+// Функция для обработки отправки формы
 function handleFormInput(form, settings) {
     const inputs = form.querySelectorAll(settings.inputSelector);
     let isFormValid = true;
@@ -34,7 +34,7 @@ export function enableValidation(settings) {
 
         form.addEventListener('input', function (evt) {
             validateInput(evt.target, settings);
-            handleFormInput(form, settings);
+            handleFormInput(form, settings); // Добавлен вызов функции handleFormInput
         });
     });
 }
@@ -50,11 +50,11 @@ export function validateInput(input, settings) {
     }
 }
 
-export function clearValidationErrors(popupElement) {
-    const errorElements = popupElement.querySelectorAll('.popup__input-error');
+export function clearValidationErrors(popupElement, settings) {
+    const errorElements = popupElement.querySelectorAll(settings.inputErrorSelector);
     errorElements.forEach(errorElement => {
         errorElement.textContent = '';
-        errorElement.classList.remove('popup__input-error_active');
+        errorElement.classList.remove(settings.inputErrorClass);
     });
 }
 

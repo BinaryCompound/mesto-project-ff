@@ -21,14 +21,20 @@ import {
     cardNameInput,
     cardLinkInput,
     profileImage,
-    profileDialog
+    profileDialog,
+    popupImage,
+    popupImageElement,
+    popupCaption
 } from './components/constants.js';
 
 import {
     editMyProfile,
     addNewCard,
     getMyProfile,
-    getCards
+    getCards,
+    deleteCard,
+    likeCard,
+    dislikeCard
 } from './components/api.js';
 
 // Общая функция для обработки формы с возможностью закрытия модального окна
@@ -39,12 +45,19 @@ function handleFormSubmit(form, handleSubmit, closeModal) {
     });
 }
 
-// Очищает содержимое полей в форме
+// Функция для очистки содержимого полей в форме
 export function clearForm(form) {
     const inputFields = form.querySelectorAll('input');
     inputFields.forEach(input => {
         input.value = ''; // Очищаем значение поля ввода
     });
+}
+
+// Функция для обновления данных профиля на странице
+function updateProfileData(data) {
+    // Обновляем данные профиля на странице
+    profileName.textContent = data.name;
+    profileDescription.textContent = data.about;
 }
 
 // Функция для загрузки данных профиля из localStorage
@@ -58,13 +71,6 @@ function loadProfileDataFromLocalStorage() {
 // Функция для сохранения данных профиля в localStorage
 function saveProfileDataLocally(data) {
     localStorage.setItem('profileData', JSON.stringify(data));
-}
-
-// Функция для обновления данных профиля на странице
-function updateProfileData(data) {
-    // Обновляем данные профиля на странице
-    profileName.textContent = data.name;
-    profileDescription.textContent = data.about;
 }
 
 // Функция для загрузки данных профиля при загрузке страницы
@@ -83,100 +89,94 @@ buttonOpenPopupProfile.addEventListener('click', async () => {
     openModal(popUpEditProfile);
     try {
         const userProfileData = await loadProfileData();
-        formEditProfile.elements['name__input'].value = userProfileData.name;
-        formEditProfile.elements['description__input'].value = userProfileData.about;
+        // Сохраняем данные в localStorage только при первой загрузке
+        saveProfileDataLocally(userProfileData);
+        updateProfileData(userProfileData);
     } catch (error) {
         console.error('Данные профиля не загружены:', error);
     }
 });
 
 // Обработчик отправки формы редактирования профиля
-function handleFormEditProfileSubmit(evt) {
+async function handleFormEditProfileSubmit(evt) {
     evt.preventDefault();
     const newName = nameInput.value;
     const newDescription = descriptionInput.value;
-    // Вызываем функцию editMyProfile для отправки данных на сервер
-    editMyProfile({ name: newName, about: newDescription })
-        .then((data) => {
-            // Если запрос успешен, сохраняем данные профиля в localStorage
-            saveProfileDataLocally(data);
-            // Обновляем данные профиля на странице
-            updateProfileData(data);
-            clearForm(formEditProfile); // Очищаем форму после успешного сохранения
-        })
-        .catch((err) => {
-            console.error('Ошибка при сохранении профиля:', err);
-        });
+    try {
+        const data = await editMyProfile({ name: newName, about: newDescription });
+        saveProfileDataLocally(data);
+        updateProfileData(data);
+        clearForm(formEditProfile);
+        closeModal(popUpEditProfile);
+    } catch (error) {
+        console.error('Ошибка при сохранении профиля:', error);
+    }
+}
+
+export function handleImageClick(imageSrc, imageName) {
+    popupImageElement.src = imageSrc;
+    popupImageElement.alt = imageName;
+    popupCaption.textContent = imageName;
+    openModal(popupImage);
 }
 
 // Вызываем функцию загрузки данных профиля при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const [profile, cards] = await Promise.all([getMyProfile(), getCards()]);
+        const profile = await getMyProfile();
         const userId = profile._id;
-        renderCards(cards, userId);
-        loadProfileDataFromLocalStorage(); // Загружаем данные из localStorage
+        let cards;
+
+        // Проверяем, есть ли данные в localStorage
+        const storedProfileData = localStorage.getItem('profileData');
+        if (storedProfileData) {
+            // Если данные есть, используем их
+            const userProfileData = JSON.parse(storedProfileData);
+            updateProfileData(userProfileData);
+            cards = await getCards();
+        } else {
+            // Если данных нет, просто загружаем карточки
+            cards = await getCards();
+        }
+
+        renderCards(cards, userId, handleImageClick);
     } catch (error) {
         console.error('Ошибка при загрузке данных:', error);
     }
-
 });
 
 // Добавление слушателя для кнопки открытия формы добавления карточки
 buttonOpenAddCard.addEventListener('click', () => openModal(popUpAddCard));
 
-// Обработчик отправки формы добавления карточки
-function handleAddCardFormSubmit(evt) {
+// Добавление слушателя для формы добавления карточки
+async function handleAddCardFormSubmit(evt) {
     evt.preventDefault();
-
-    // Получаем значения полей формы
-    const cardName = cardNameInput.value; 
+    const cardName = cardNameInput.value;
     const cardLink = cardLinkInput.value;
-
-    // Получаем кнопку отправки формы
     const addCardButton = addCardForm.querySelector('.popup__button');
-    
-    // Устанавливаем текст кнопки на "Сохранение..."
     addCardButton.textContent = 'Сохранение...';
+    try {
+        const data = await addNewCard({ name: cardName, link: cardLink });
 
-    // Создаем объект с данными для отправки на сервер
-    const cardData = {
-        name: cardName,
-        link: cardLink
-    };
+        // После успешного добавления карточки, рендерим её и вставляем в разметку
+        renderCards(data);
 
-    // Здесь выполняем отправку данных формы на сервер
-    addNewCard(cardData)
-        .then((data) => {
-            console.log('Данные после успешного добавления карточки:', data);
-            // Если запрос успешен, закрываем модальное окно
-            closeModal(popUpAddCard);
-            // Очищаем форму после успешного добавления
-            clearForm(addCardForm);
-        })
-        .catch((error) => {
-            console.error('Ошибка при добавлении карточки:', error);
-        })
-        .finally(() => {
-            // Возвращаем исходный текст кнопки
-            addCardButton.textContent = 'Создать';
-        });
+        // Очищаем поля формы
+        clearForm(addCardForm);
+
+        // Закрываем модальное окно
+        closeModal(popUpAddCard);
+    } catch (error) {
+        console.error('Ошибка при добавлении карточки:', error);
+    } finally {
+        addCardButton.textContent = 'Создать';
+    }
 }
 
 // Добавление слушателя для формы добавления карточки
 handleFormSubmit(addCardForm, handleAddCardFormSubmit, () => closeModal(popUpAddCard));
 
-// Добавление слушателя для кнопки открытия формы редактирования профиля
-buttonOpenPopupProfile.addEventListener('click', () => {
-    openModal(popUpEditProfile);
-    nameInput.value = profileTitleStatic;
-    descriptionInput.value = profileDescriptionStatic;
-});
-
-// Добавление слушателя для формы редактирования профиля
-handleFormSubmit(formEditProfile, handleFormEditProfileSubmit, () => closeModal(popUpEditProfile));
-
-// Добавление слушателя для кнопки открытия формы обновления аватара
+// Добавление слушателя для открытия формы обновления аватара
 profileImage.addEventListener('click', openAvatarModal);
 
 // Добавление слушателя для формы обновления аватара
