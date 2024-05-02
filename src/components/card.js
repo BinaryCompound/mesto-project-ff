@@ -1,24 +1,19 @@
-import { getCards, getMyProfile } from "./api.js";
+
 import { cardContainer } from "./constants.js";
 import { likeCard, dislikeCard, deleteCard } from "./api.js";
-import { handleImageClick } from "../index.js";
 
-export async function renderCards() {
+export async function renderCards(cards, userId, handleImageClick) {
     try {
-        const profile = await getMyProfile();
-        const userId = profile._id;
-
-        const cards = await getCards();
         cards.forEach(card => {
             const cardElement = createCardElement(card, userId, handleImageClick);
             cardContainer.appendChild(cardElement);
         });
     } catch (error) {
-        console.error('Ошибка при загрузке профиля или карточек:', error.message);
+        console.error('Ошибка при загрузке карточек:', error.message);
     }
 }
 
- function createCardElement(cardData, userId, handleImageClick) { // Добавлен аргумент handleImageClick
+function createCardElement(cardData, userId, handleImageClick) {
     const template = document.querySelector('#card-template');
     if (!template) {
         console.error('Шаблон карточки не найден');

@@ -1,4 +1,3 @@
-// Импорт стилей и компонентов
 import './styles/index.css';
 import { renderCards } from './components/card.js';
 import { openModal, closeModal } from './components/modal.js';
@@ -32,9 +31,6 @@ import {
     addNewCard,
     getMyProfile,
     getCards,
-    deleteCard,
-    likeCard,
-    dislikeCard
 } from './components/api.js';
 
 // Общая функция для обработки формы с возможностью закрытия модального окна
@@ -71,12 +67,14 @@ function loadProfileDataFromLocalStorage() {
 // Функция для сохранения данных профиля в localStorage
 function saveProfileDataLocally(data) {
     localStorage.setItem('profileData', JSON.stringify(data));
+    updateProfileData(data); // Обновляем данные профиля на странице
 }
 
 // Функция для загрузки данных профиля при загрузке страницы
 async function loadProfileData() {
     try {
         const userProfileData = await getMyProfile();
+        saveProfileDataLocally(userProfileData); // Сохраняем данные в localStorage при каждой загрузке страницы
         return userProfileData;
     } catch (error) {
         console.error('Ошибка при загрузке данных пользователя:', error);
@@ -89,9 +87,6 @@ buttonOpenPopupProfile.addEventListener('click', async () => {
     openModal(popUpEditProfile);
     try {
         const userProfileData = await loadProfileData();
-        // Сохраняем данные в localStorage только при первой загрузке
-        saveProfileDataLocally(userProfileData);
-        updateProfileData(userProfileData);
     } catch (error) {
         console.error('Данные профиля не загружены:', error);
     }
@@ -105,7 +100,6 @@ async function handleFormEditProfileSubmit(evt) {
     try {
         const data = await editMyProfile({ name: newName, about: newDescription });
         saveProfileDataLocally(data);
-        updateProfileData(data);
         clearForm(formEditProfile);
         closeModal(popUpEditProfile);
     } catch (error) {
@@ -123,22 +117,10 @@ export function handleImageClick(imageSrc, imageName) {
 // Вызываем функцию загрузки данных профиля при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const profile = await getMyProfile();
-        const userId = profile._id;
-        let cards;
-
-        // Проверяем, есть ли данные в localStorage
-        const storedProfileData = localStorage.getItem('profileData');
-        if (storedProfileData) {
-            // Если данные есть, используем их
-            const userProfileData = JSON.parse(storedProfileData);
-            updateProfileData(userProfileData);
-            cards = await getCards();
-        } else {
-            // Если данных нет, просто загружаем карточки
-            cards = await getCards();
-        }
-
+        await loadProfileData(); // Получаем профиль пользователя при загрузке страницы
+        const profileData = JSON.parse(localStorage.getItem('profileData'));
+        const userId = profileData._id;
+        const cards = await getCards();
         renderCards(cards, userId, handleImageClick);
     } catch (error) {
         console.error('Ошибка при загрузке данных:', error);
@@ -157,14 +139,8 @@ async function handleAddCardFormSubmit(evt) {
     addCardButton.textContent = 'Сохранение...';
     try {
         const data = await addNewCard({ name: cardName, link: cardLink });
-
-        // После успешного добавления карточки, рендерим её и вставляем в разметку
         renderCards(data);
-
-        // Очищаем поля формы
         clearForm(addCardForm);
-
-        // Закрываем модальное окно
         closeModal(popUpAddCard);
     } catch (error) {
         console.error('Ошибка при добавлении карточки:', error);
