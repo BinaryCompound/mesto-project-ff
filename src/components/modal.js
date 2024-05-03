@@ -1,10 +1,3 @@
-// Функция для обработки отправки формы
-function handleFormSubmit(form) {
-  form.addEventListener('submit', function (evt) {
-    evt.preventDefault();
-  });
-}
-
 // Функция для открытия модального окна
 export function openModal(modalWindow) {
   modalWindow.classList.add('popup_is-opened');

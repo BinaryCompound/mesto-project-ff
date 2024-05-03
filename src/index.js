@@ -1,8 +1,8 @@
 import './styles/index.css';
-import { renderCards } from './components/card.js';
+import { createCardElement } from './components/card.js';
 import { openModal, closeModal } from './components/modal.js';
 import { enableValidation } from './components/validation.js';
-import { openAvatarModal, handleAvatarFormSubmit, closeAvatarModal } from './components/avatar.js';
+import { openAvatarModal, handleAvatarFormSubmit, closeAvatarModal, updateAvatarOnPage } from './components/avatar.js'; // Добавлен экспорт функции updateAvatarOnPage
 import {
     nameInput,
     descriptionInput,
@@ -40,6 +40,18 @@ function handleFormSubmit(form, handleSubmit, closeModal) {
         handleSubmit(evt, closeModal); // Передаем функцию закрытия модального окна
     });
 }
+
+export async function renderCards(cards, userId, handleImageClick) {
+    try {
+        cards.forEach(card => {
+            const cardElement = createCardElement(card, userId, handleImageClick);
+            cardContainer.appendChild(cardElement);
+        });
+    } catch (error) {
+        console.error('Ошибка при загрузке карточек:', error.message);
+    }
+}
+
 
 // Функция для очистки содержимого полей в форме
 export function clearForm(form) {
@@ -86,7 +98,16 @@ async function loadProfileData() {
 buttonOpenPopupProfile.addEventListener('click', async () => {
     openModal(popUpEditProfile);
     try {
-        const userProfileData = await loadProfileData();
+        // Проверяем, есть ли данные профиля в localStorage
+        const userProfileData = JSON.parse(localStorage.getItem('profileData'));
+        if (userProfileData) {
+            // Если данные есть, обновляем их на странице
+            updateProfileData(userProfileData);
+        } else {
+            // Если данных нет, загружаем их с сервера и сохраняем в localStorage
+            const userProfileData = await loadProfileData();
+            saveProfileDataLocally(userProfileData);
+        }
     } catch (error) {
         console.error('Данные профиля не загружены:', error);
     }
@@ -97,6 +118,8 @@ async function handleFormEditProfileSubmit(evt) {
     evt.preventDefault();
     const newName = nameInput.value;
     const newDescription = descriptionInput.value;
+    const editProfileButton = formEditProfile.querySelector('.popup__button');
+    editProfileButton.textContent = 'Сохранение...'; // Изменяем текст кнопки на время отправки формы
     try {
         const data = await editMyProfile({ name: newName, about: newDescription });
         saveProfileDataLocally(data);
@@ -104,8 +127,11 @@ async function handleFormEditProfileSubmit(evt) {
         closeModal(popUpEditProfile);
     } catch (error) {
         console.error('Ошибка при сохранении профиля:', error);
+    } finally {
+        editProfileButton.textContent = 'Сохранить'; // Возвращаем исходный текст кнопки после завершения запроса
     }
 }
+
 
 export function handleImageClick(imageSrc, imageName) {
     popupImageElement.src = imageSrc;
@@ -117,8 +143,7 @@ export function handleImageClick(imageSrc, imageName) {
 // Вызываем функцию загрузки данных профиля при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        await loadProfileData(); // Получаем профиль пользователя при загрузке страницы
-        const profileData = JSON.parse(localStorage.getItem('profileData'));
+        const profileData = await loadProfileData(); // Получаем профиль пользователя при загрузке страницы
         const userId = profileData._id;
         const cards = await getCards();
         renderCards(cards, userId, handleImageClick);
@@ -138,8 +163,13 @@ async function handleAddCardFormSubmit(evt) {
     const addCardButton = addCardForm.querySelector('.popup__button');
     addCardButton.textContent = 'Сохранение...';
     try {
-        const data = await addNewCard({ name: cardName, link: cardLink });
-        renderCards(data);
+        const newCardData = { name: cardName, link: cardLink };
+        const data = await addNewCard(newCardData);
+
+        // Локально добавляем новую карточку в начало галереи
+        const newCardElement = createCardElement(data);
+        cardContainer.prepend(newCardElement);
+
         clearForm(addCardForm);
         closeModal(popUpAddCard);
     } catch (error) {
@@ -151,6 +181,8 @@ async function handleAddCardFormSubmit(evt) {
 
 // Добавление слушателя для формы добавления карточки
 handleFormSubmit(addCardForm, handleAddCardFormSubmit, () => closeModal(popUpAddCard));
+
+handleFormSubmit(formEditProfile, handleFormEditProfileSubmit, () => closeModal(popUpEditProfile));
 
 // Добавление слушателя для открытия формы обновления аватара
 profileImage.addEventListener('click', openAvatarModal);
@@ -189,3 +221,14 @@ enableValidation({
     inputErrorClass: 'popup__input-error_active',
     popup__input_type_error: 'popup__input_type_error',
 });
+
+// Функция для загрузки URL аватара из localStorage при загрузке страницы
+function loadAvatarFromLocalStorage() {
+  const avatarUrl = localStorage.getItem('avatarUrl');
+  if (avatarUrl) {
+    updateAvatarOnPage(avatarUrl);
+  }
+}
+
+// Вызываем функцию загрузки URL аватара при загрузке страницы
+document.addEventListener('DOMContentLoaded', loadAvatarFromLocalStorage);

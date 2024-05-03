@@ -1,19 +1,6 @@
-
-import { cardContainer } from "./constants.js";
 import { likeCard, dislikeCard, deleteCard } from "./api.js";
 
-export async function renderCards(cards, userId, handleImageClick) {
-    try {
-        cards.forEach(card => {
-            const cardElement = createCardElement(card, userId, handleImageClick);
-            cardContainer.appendChild(cardElement);
-        });
-    } catch (error) {
-        console.error('Ошибка при загрузке карточек:', error.message);
-    }
-}
-
-function createCardElement(cardData, userId, handleImageClick) {
+export function createCardElement(cardData, userId, handleImageClick) {
     const template = document.querySelector('#card-template');
     if (!template) {
         console.error('Шаблон карточки не найден');
